@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Despegar — Vuelos</title>
+  <link rel="stylesheet" href="./eva/eva-core.min.css" />
+  <link rel="stylesheet" href="./eva/eva.min.css" />
+  <style>
+    * { box-sizing: border-box; }
+
+    /* ─── BODY / VIEWS ─── */
+    body {
+      margin: 0;
+      font-family: var(--font-family, 'Rubik'), Arial, sans-serif;
+      background: var(--color-neutral-100, #F2F4F5);
+    }
+    body.mode-home {
+      background: linear-gradient(160deg, var(--brand-primary-2, #A780FF) 0%, var(--brand-primary-3, #4300D2) 40%, var(--brand-primary-4, #270570) 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── SHARED HEADER ─── */
+    .dsp-header { background: transparent; padding: 0; }
+    .dsp-header-inner {
+      display: flex;
+      align-items: center;
+      height: 60px;
+      gap: 24px;
+    }
+    .dsp-logo { display: flex; align-items: center; text-decoration: none; }
+    .dsp-logo-img { height: 22px; width: auto; filter: brightness(0) invert(1); }
+    .dsp-header-nav { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+    .dsp-nav-link {
+      color: rgba(255,255,255,0.75);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .dsp-nav-link:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+    /* ─────────────────────────────────────────── HOME VIEW ─── */
+    #view-home { flex: 1; display: flex; flex-direction: column; }
+
+    .dsp-hero {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding: 48px 0 64px;
+    }
+    .dsp-hero-inner { display: flex; align-items: flex-start; gap: 48px; }
+
+    /* Copy (left col) */
+    .dsp-col-copy { flex: 1; padding-top: 12px; }
+    .dsp-hero-tagline {
+      color: var(--brand-primary-2, #A780FF);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .dsp-hero-headline {
+      color: var(--color-white, #fff);
+      font-size: clamp(28px, 3.5vw, 42px);
+      font-weight: 800;
+      line-height: 1.12;
+      margin: 0 0 16px;
+    }
+    .dsp-hero-subhead {
+      color: rgba(255,255,255,0.55);
+      font-size: 15px;
+      line-height: 1.5;
+      margin: 0 0 32px;
+      max-width: 360px;
+    }
+    .dsp-hero-badges { display: flex; flex-wrap: wrap; gap: 10px; }
+    .dsp-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 6px 12px;
+      color: rgba(255,255,255,0.75);
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .dsp-badge i { font-size: 14px; color: var(--brand-primary-2, #A780FF); }
+
+    /* Search card (right col) */
+    .dsp-col-search { flex: 0 0 520px; max-width: 520px; }
+    .dsp-search-label {
+      color: rgba(255,255,255,0.6);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .dsp-search-card {
+      background: var(--color-white, #fff);
+      border-radius: 12px;
+      padding: 24px 20px 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .trip-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 18px;
+      border-bottom: 1px solid var(--color-neutral-200, #E9ECF1);
+      padding-bottom: 12px;
+    }
+    .trip-tab {
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      background: transparent;
+      color: var(--color-neutral-600, #72777F);
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .trip-tab.-active {
+      background: var(--brand-primary-1, #EBE5F5);
+      color: var(--brand-primary-3, #4300D2);
+      font-weight: 600;
+    }
+    .sb-form { display: flex; flex-direction: column; gap: 10px; }
+    .sb-row { display: flex; gap: 10px; }
+    .sb-field { flex: 1; min-width: 0; }
+    .sb-field-sm { flex: 0 0 130px; }
+
+    @media (max-width: 900px) {
+      .dsp-hero-inner { flex-direction: column; gap: 32px; }
+      .dsp-col-search { flex: none; max-width: 100%; width: 100%; }
+      .dsp-col-copy { padding-top: 0; }
+      .dsp-hero-subhead { max-width: 100%; }
+      .dsp-header-nav { display: none; }
+    }
+
+    /* ─────────────────────────────────────── RESULTS VIEW ─── */
+    #view-results { display: none; }
+
+    /* Gradient top band */
+    .res-top {
+      background: linear-gradient(160deg, var(--brand-primary-2, #A780FF) 0%, var(--brand-primary-3, #4300D2) 40%, var(--brand-primary-4, #270570) 100%);
+      padding-bottom: 20px;
+    }
+
+    /* Compact search bar in results */
+    .res-search-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .res-search-bar .sb-field { min-width: 120px; }
+    .res-search-bar .sb-field-sm { flex: 0 0 110px; }
+    .res-context {
+      color: rgba(255,255,255,0.5);
+      font-size: 12px;
+      margin-top: 10px;
+      letter-spacing: 0.2px;
+    }
+
+    /* Results body */
+    .res-body { padding: 24px 0 48px; }
+    .res-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .res-count {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--color-neutral-800, #323439);
+    }
+    .res-back {
+      font-size: 13px;
+      color: var(--brand-primary-3, #4300D2);
+      cursor: pointer;
+      font-weight: 500;
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: inherit;
+    }
+    .res-back:hover { text-decoration: underline; }
+
+    /* ─── CLUSTER CARD ─── */
+    .card-item { margin-bottom: 10px; }
+    .cluster-card {
+      display: flex;
+      background: var(--color-white, #fff);
+      border-radius: 12px;
+      border: 1px solid var(--color-neutral-200, #E9ECF1);
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .cluster-main { flex: 1; padding: 20px 20px 12px; }
+    .cluster-pricebox {
+      flex: 0 0 196px;
+      border-left: 1px solid var(--color-neutral-200, #E9ECF1);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: var(--color-neutral-100, #F2F4F5);
+    }
+
+    /* Leg */
+    .leg-section { margin-bottom: 14px; }
+    .leg-section:last-of-type { margin-bottom: 0; }
+    .leg-header {
+      display: grid;
+      grid-template-columns: 130px 1fr 1fr 88px;
+      gap: 8px;
+      align-items: end;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--color-neutral-200, #E9ECF1);
+    }
+    .leg-label { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
+    .leg-plane { width: 16px; height: 16px; opacity: 0.7; }
+    .leg-label-text { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--color-neutral-600, #72777F); }
+    .leg-date { font-size: 11px; color: var(--color-neutral-600, #72777F); }
+    .airport-code { display: block; font-size: 18px; font-weight: 700; color: var(--color-neutral-800, #323439); line-height: 1; }
+    .airport-city { display: block; font-size: 11px; color: var(--color-neutral-600, #72777F); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bag-col-title { display: block; }
+    .bag-col-sub { font-size: 10px; color: var(--color-neutral-600, #72777F); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .leg-flight-row {
+      display: grid;
+      grid-template-columns: 130px 1fr 1fr 88px;
+      gap: 8px;
+      align-items: center;
+    }
+    .col-airline { display: flex; align-items: center; gap: 6px; }
+    .radio-dot { width: 14px; opacity: 0.4; }
+    .airline-logo-img { height: 20px; width: auto; border-radius: 3px; }
+    .airline-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px; border-radius: 4px;
+      background: var(--brand-primary-3, #4300D2); color: #fff;
+      font-size: 9px; font-weight: 700;
+    }
+    .airline-name { font-size: 11px; color: var(--color-neutral-700, #565A60); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .col-times-dep, .col-times-arr { display: flex; flex-direction: column; gap: 3px; }
+    .time-bold { font-size: 20px; font-weight: 700; color: var(--color-neutral-800, #323439); line-height: 1; }
+    .stops-block { display: flex; align-items: center; gap: 4px; }
+    .stops-text { font-size: 11px; color: var(--color-success-500, #028574); }
+    .stops-text.-layover { color: var(--color-warning-500, #AE6504); }
+    .stops-line { height: 2px; width: 32px; opacity: 0.3; }
+    .duration-text { font-size: 11px; color: var(--color-neutral-600, #72777F); }
+
+    .col-bag-icons { display: flex; align-items: center; gap: 6px; }
+    .bag-icons { display: flex; gap: 4px; }
+    .bag-icons img { width: 18px; height: 18px; }
+    .chevron-icon { width: 16px; opacity: 0.4; margin-left: 4px; cursor: pointer; }
+
+    /* Driver badges */
+    .driver-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+    .drv-badge {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: var(--color-neutral-200, #E9ECF1);
+      color: var(--color-neutral-700, #565A60);
+    }
+    .drv-badge.-benefit { background: var(--brand-primary-1, #EBE5F5); color: var(--brand-primary-3, #4300D2); }
+    .drv-badge.-promo { background: var(--color-success-100, #E6FBFB); color: var(--color-success-500, #028574); }
+
+    /* Pricebox */
+    .pricebox-section { display: flex; flex-direction: column; gap: 6px; }
+    .price-label { font-size: 11px; color: var(--color-neutral-600, #72777F); }
+    .price-original { font-size: 12px; color: var(--color-neutral-400, #C0C4CC); text-decoration: line-through; }
+    .price-main { display: flex; align-items: baseline; gap: 3px; }
+    .price-currency { font-size: 14px; font-weight: 600; color: var(--color-neutral-800, #323439); }
+    .price-amount { font-size: 22px; font-weight: 700; color: var(--color-neutral-800, #323439); line-height: 1; }
+    .price-breakdown { margin-top: 4px; display: flex; flex-direction: column; gap: 3px; }
+    .price-row { display: flex; justify-content: space-between; gap: 8px; }
+    .price-row-label { font-size: 10px; color: var(--color-neutral-600, #72777F); }
+    .price-row-value { font-size: 10px; color: var(--color-neutral-700, #565A60); font-weight: 500; }
+    .price-final-row { display: flex; flex-direction: column; gap: 2px; padding-top: 8px; border-top: 1px solid var(--color-neutral-200, #E9ECF1); }
+    .price-final-label { font-size: 11px; color: var(--color-neutral-600, #72777F); }
+    .price-final-values { display: flex; flex-direction: column; gap: 1px; }
+    .price-final-total { font-size: 15px; font-weight: 700; color: var(--color-neutral-800, #323439); }
+    .price-final-points { font-size: 10px; color: var(--brand-primary-3, #4300D2); }
+    .btn-buy {
+      width: 100%;
+      height: 40px;
+      background: var(--brand-primary-3, #4300D2);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      margin-top: 4px;
+    }
+    .btn-buy:hover { background: var(--brand-primary-4, #270570); }
+    .btn-add {
+      width: 100%;
+      height: 36px;
+      background: transparent;
+      color: var(--brand-primary-3, #4300D2);
+      border: 1px solid var(--brand-primary-3, #4300D2);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-add img { width: 16px; }
+
+    /* SOFIA banner */
+    .sofia-banner {
+      background: linear-gradient(135deg, var(--brand-primary-1, #EBE5F5), #fff);
+      border: 1px solid var(--brand-primary-1, #EBE5F5);
+      border-radius: 12px;
+      padding: 16px 20px;
+    }
+    .sofia-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .sofia-title-wrap { display: flex; align-items: center; gap: 8px; }
+    .sofia-icon { width: 20px; height: 20px; }
+    .sofia-title { font-size: 13px; font-weight: 600; color: var(--brand-primary-3, #4300D2); }
+    .sofia-pagination { display: flex; align-items: center; gap: 6px; }
+    .sofia-page-btn { width: 16px; opacity: 0.5; cursor: pointer; }
+    .sofia-count { font-size: 11px; color: var(--color-neutral-600, #72777F); }
+    .sofia-text { font-size: 13px; color: var(--color-neutral-700, #565A60); line-height: 1.5; margin: 0; }
+  </style>
+</head>
+<body class="mode-home">
+
+  <!-- ─────────────────────────────────── VIEW: HOME ─── -->
+  <div id="view-home">
+    <header class="dsp-header">
+      <div class="eva-3-container">
+        <div class="dsp-header-inner">
+          <a class="dsp-logo" href="#" onclick="showHome(event)">
+            <img class="dsp-logo-img" src="./eva/resources/images/despegar-logo.svg" alt="Despegar" />
+          </a>
+          <nav class="dsp-header-nav">
+            <span class="dsp-nav-link">Vuelos</span>
+            <span class="dsp-nav-link">Hoteles</span>
+            <span class="dsp-nav-link">Paquetes</span>
+            <span class="dsp-nav-link">Autos</span>
+            <button class="eva-3-btn -sm -white" style="margin-left:8px;">Ingresá</button>
+          </nav>
+        </div>
+      </div>
+    </header>
+    <main class="dsp-hero">
+      <div class="eva-3-container">
+        <div class="dsp-hero-inner">
+
+          <!-- Copy -->
+          <div class="dsp-col-copy">
+            <p class="dsp-hero-tagline">Viajá con Despegar</p>
+            <h1 class="dsp-hero-headline">Tu próximo viaje<br />empieza acá</h1>
+            <p class="dsp-hero-subhead">Buscá entre cientos de vuelos, comparé precios y encontrá la mejor opción para viajar.</p>
+            <div class="dsp-hero-badges">
+              <span class="dsp-badge"><i class="eva-3-icon-star-filled"></i> Mejor precio garantizado</span>
+              <span class="dsp-badge"><i class="eva-3-icon-loyalty-filled"></i> Sumá puntos Despegar</span>
+              <span class="dsp-badge"><i class="eva-3-icon-info"></i> Atención 24/7</span>
+            </div>
+          </div>
+
+          <!-- Search card -->
+          <div class="dsp-col-search">
+            <p class="dsp-search-label">Buscá tu vuelo</p>
+            <div class="dsp-search-card">
+              <div class="trip-tabs">
+                <button class="trip-tab -active" onclick="setTab(this, true)">Ida y vuelta</button>
+                <button class="trip-tab" onclick="setTab(this, false)">Solo ida</button>
+                <button class="trip-tab" onclick="setTab(this, false)">Multidestino</button>
+              </div>
+              <form class="sb-form" onsubmit="handleSearch(event)">
+                <div class="sb-row">
+                  <div class="sb-field">
+                    <div class="eva-3-input-field -not-empty -icon">
+                      <div class="input-container">
+                        <input id="sb-origin" class="input-tag" placeholder="" value="Buenos Aires" />
+                        <label class="input-label" for="sb-origin">Origen</label>
+                        <span class="input-icon"><i class="eva-3-icon-flights-ui"></i></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="sb-field">
+                    <div class="eva-3-input-field -not-empty -icon">
+                      <div class="input-container">
+                        <input id="sb-dest" class="input-tag" placeholder="" value="Mendoza" />
+                        <label class="input-label" for="sb-dest">Destino</label>
+                        <span class="input-icon"><i class="eva-3-icon-flights-ui"></i></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="sb-row">
+                  <div class="sb-field">
+                    <div class="eva-3-input-field -not-empty">
+                      <div class="input-container">
+                        <input id="sb-depart" class="input-tag" placeholder="" value="20/10/2026" />
+                        <label class="input-label" for="sb-depart">Ida</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="sb-field" id="return-field">
+                    <div class="eva-3-input-field -not-empty">
+                      <div class="input-container">
+                        <input id="sb-return" class="input-tag" placeholder="" value="25/10/2026" />
+                        <label class="input-label" for="sb-return">Vuelta</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="sb-field-sm">
+                    <div class="eva-3-input-field -not-empty">
+                      <div class="input-container">
+                        <input id="sb-pax" class="input-tag" placeholder="" value="2 adultos" />
+                        <label class="input-label" for="sb-pax">Pasajeros</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <button type="submit" class="eva-3-btn -lg -primary" style="width:100%;margin-top:4px;">
+                  <i class="eva-3-icon-search btn-icon"></i>
+                  <em class="btn-text">Buscar vuelos</em>
+                </button>
+              </form>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ─────────────────────────────── VIEW: RESULTS ─── -->
+  <div id="view-results">
+
+    <!-- Compact gradient top -->
+    <div class="res-top">
+      <div class="eva-3-container">
+        <div class="dsp-header-inner">
+          <a class="dsp-logo" href="#" onclick="showHome(event)">
+            <img class="dsp-logo-img" src="./eva/resources/images/despegar-logo.svg" alt="Despegar" />
+          </a>
+          <nav class="dsp-header-nav">
+            <span class="dsp-nav-link">Vuelos</span>
+            <span class="dsp-nav-link">Hoteles</span>
+            <span class="dsp-nav-link">Paquetes</span>
+            <span class="dsp-nav-link">Autos</span>
+            <button class="eva-3-btn -sm -white" style="margin-left:8px;">Ingresá</button>
+          </nav>
+        </div>
+        <div class="res-search-bar">
+          <div class="sb-field" style="min-width:130px;max-width:160px;">
+            <div class="eva-3-input-field -not-empty -icon">
+              <div class="input-container">
+                <input class="input-tag" value="Buenos Aires" />
+                <label class="input-label">Origen</label>
+                <span class="input-icon"><i class="eva-3-icon-flights-ui"></i></span>
+              </div>
+            </div>
+          </div>
+          <div class="sb-field" style="min-width:110px;max-width:140px;">
+            <div class="eva-3-input-field -not-empty -icon">
+              <div class="input-container">
+                <input class="input-tag" value="Mendoza" />
+                <label class="input-label">Destino</label>
+                <span class="input-icon"><i class="eva-3-icon-flights-ui"></i></span>
+              </div>
+            </div>
+          </div>
+          <div class="sb-field" style="min-width:110px;max-width:130px;">
+            <div class="eva-3-input-field -not-empty">
+              <div class="input-container">
+                <input class="input-tag" value="20/10/2026" />
+                <label class="input-label">Ida</label>
+              </div>
+            </div>
+          </div>
+          <div class="sb-field" style="min-width:110px;max-width:130px;">
+            <div class="eva-3-input-field -not-empty">
+              <div class="input-container">
+                <input class="input-tag" value="25/10/2026" />
+                <label class="input-label">Vuelta</label>
+              </div>
+            </div>
+          </div>
+          <div class="sb-field" style="min-width:90px;max-width:110px;">
+            <div class="eva-3-input-field -not-empty">
+              <div class="input-container">
+                <input class="input-tag" value="2 adultos" />
+                <label class="input-label">Pasajeros</label>
+              </div>
+            </div>
+          </div>
+          <button class="eva-3-btn -md -primary">
+            <i class="eva-3-icon-search btn-icon"></i>
+            <em class="btn-text">Buscar</em>
+          </button>
+        </div>
+        <p class="res-context">Ida y vuelta · Economía · 589 vuelos disponibles</p>
+      </div>
+    </div>
+
+    <!-- Results body -->
+    <section class="res-body">
+      <div class="eva-3-container">
+        <div class="res-header">
+          <span class="res-count" id="results-count"></span>
+          <button class="res-back" onclick="showHome()">← Nueva búsqueda</button>
+        </div>
+        <div id="results-container">
+          <p class="eva-3-body-2" style="color:var(--color-neutral-600);">Cargando vuelos…</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ─── SCRIPTS ─── -->
+  <script>
+    /* ── View switching ── */
+    function showResults() {
+      document.body.classList.remove('mode-home');
+      document.getElementById('view-home').style.display = 'none';
+      document.getElementById('view-results').style.display = 'block';
+      window.scrollTo(0, 0);
+    }
+    function showHome(e) {
+      if (e) e.preventDefault();
+      document.body.classList.add('mode-home');
+      document.getElementById('view-home').style.display = '';
+      document.getElementById('view-results').style.display = 'none';
+      window.scrollTo(0, 0);
+    }
+    function setTab(el, showReturn) {
+      document.querySelectorAll('.trip-tab').forEach(t => t.classList.remove('-active'));
+      el.classList.add('-active');
+      document.getElementById('return-field').style.display = showReturn ? '' : 'none';
+    }
+    function handleSearch(e) {
+      e.preventDefault();
+      showResults();
+    }
+
+    /* ── Assets ── */
+    const A = {
+      ida:       'https://www.figma.com/api/mcp/asset/499bf4a0-5817-4186-82db-4afbcb435cb5.svg',
+      vuelta:    'https://www.figma.com/api/mcp/asset/e3641a22-50c3-4d35-ac1f-a1657a210606.svg',
+      backpack:  'https://www.figma.com/api/mcp/asset/9bc3e743-82ea-4e8d-b9b0-a2ebd8cd91f7.svg',
+      handbag:   'https://www.figma.com/api/mcp/asset/5cf028ff-2fc0-4b59-971c-d1a68923762e.svg',
+      suitcase:  'https://www.figma.com/api/mcp/asset/52424b71-09cb-451c-bd68-e795724ef625.svg',
+      trolley:   'https://www.figma.com/api/mcp/asset/d2f3c4d1-63a3-41aa-8b33-cfab48e00ec4.svg',
+      chevDown:  'https://www.figma.com/api/mcp/asset/fd8b85dd-560b-44ba-8503-a70db525d67e.svg',
+      line:      'https://www.figma.com/api/mcp/asset/b3de85a6-d23a-446c-b23e-93c76ddf5d8a.svg',
+      arLogo:    'https://www.figma.com/api/mcp/asset/08326b11-3e80-4032-ab80-8bede185316f.png',
+      radioOn:   'https://www.figma.com/api/mcp/asset/57e22e48-197e-4412-ba9b-5d7ccf776f54.svg',
+      ai:        'https://www.figma.com/api/mcp/asset/5f9f5c07-6e7b-470a-bc00-431776ec9308.svg',
+      chevLeft:  'https://www.figma.com/api/mcp/asset/930f495c-1155-44f1-ac22-dd26d5a4ce94.svg',
+      chevRight: 'https://www.figma.com/api/mcp/asset/a395d4a9-2d34-4eda-a1da-b7007731561b.svg',
+    };
+
+    const AIRLINES = { '0J':'JetSmart','JA':'JetSmart','AR':'Aerolíneas Argentinas','WJ':'JetSmart' };
+    const CITIES   = { 'EZE':'Buenos Aires','AEP':'Buenos Aires','BUE':'Buenos Aires','MDZ':'Mendoza','COR':'Córdoba' };
+    const DAYS_ES  = ['dom.','lun.','mar.','mié.','jue.','vie.','sáb.'];
+    const MONTHS_ES= ['ene.','feb.','mar.','abr.','may.','jun.','jul.','ago.','sep.','oct.','nov.','dic.'];
+    const FARE_FAMILIES = { 'BASE':'Tarifa base','TRAVEL':'Con equipaje','LIGHT':'Solo mano' };
+
+    function fTime(d) { return (d||'').substring(11,16); }
+    function fDate(d) { const dt=new Date(d); return `${DAYS_ES[dt.getDay()]} ${dt.getDate()} ${MONTHS_ES[dt.getMonth()]}`; }
+    function fPrice(n) { return Math.round(n).toLocaleString('es-AR'); }
+    function fDur(s) { if(!s)return''; const[h,m]=s.split(':'); return `${parseInt(h)}h ${m}m`; }
+    function getRoute(c) { return c.routes[(c.selectedRouteIndex||1)-1]||c.routes[0]; }
+    function airlineLogo(code) {
+      if(code==='AR') return `<img src="${A.arLogo}" class="airline-logo-img" alt="AR">`;
+      return `<div class="airline-badge">${code==='0J'||code==='JA'?'JS':code}</div>`;
+    }
+
+    function renderBadges(item) {
+      const bk = Object.values(item.bookingInfoMap||{})[0]||{};
+      const ff = FARE_FAMILIES[bk.fareFamily]||'';
+      const hasDisc = (item.priceDetail?.discountDetail?.amount||0)>0;
+      const badges = [];
+      if(item.sponsoredListing) badges.push(`<span class="drv-badge">Promocionado</span>`);
+      if(ff) badges.push(`<span class="drv-badge">${ff}</span>`);
+      if(hasDisc) badges.push(`<span class="drv-badge -benefit">Descuento bancario</span>`);
+      return badges.join('');
+    }
+
+    function renderLeg(isIda, choice, airlineCode) {
+      const route   = getRoute(choice);
+      const first   = route.segments[0];
+      const last    = route.segments[route.segments.length-1];
+      const depCode = first.departure.airportCode;
+      const arrCode = last.arrival.airportCode;
+      const isDirect= route.stopsCount===0;
+      const stopsText = isDirect?'Directo':`${route.stopsCount} escala${route.stopsCount>1?'s':''}`;
+      const bag = route.baggageInfo||{};
+      const hasBackpack = bag.backpackType==='INCLUDED';
+      const hasCarryon  = bag.carryonType==='INCLUDED';
+      const hasSuitcase = (bag.quantity||0)>0;
+
+      return `<div class="leg-section">
+        <div class="leg-header">
+          <div class="col-date">
+            <div class="leg-label">
+              <img src="${isIda?A.ida:A.vuelta}" class="leg-plane" alt="">
+              <span class="leg-label-text">${isIda?'IDA':'VUELTA'}</span>
+            </div>
+            <span class="leg-date">${fDate(first.departure.date)}</span>
+          </div>
+          <div class="col-airport">
+            <span class="airport-code">${depCode}</span>
+            <span class="airport-city">${CITIES[depCode]||depCode}</span>
+          </div>
+          <div class="col-airport">
+            <span class="airport-code">${arrCode}</span>
+            <span class="airport-city">${CITIES[arrCode]||arrCode}</span>
+          </div>
+          <div class="col-bag-header">
+            <span class="bag-col-title"> </span>
+            <span class="bag-col-sub">Equipaje</span>
+          </div>
+        </div>
+        <div class="leg-flight-row">
+          <div class="col-airline">
+            <img src="${A.radioOn}" class="radio-dot" alt="">
+            ${airlineLogo(airlineCode)}
+            <span class="airline-name">${AIRLINES[airlineCode]||airlineCode}</span>
+          </div>
+          <div class="col-times-dep">
+            <span class="time-bold">${fTime(first.departure.date)}</span>
+            <div class="stops-block">
+              <span class="stops-text${isDirect?'':' -layover'}">${stopsText}</span>
+              <img src="${A.line}" class="stops-line" alt="">
+            </div>
+          </div>
+          <div class="col-times-arr">
+            <span class="time-bold">${fTime(last.arrival.date)}</span>
+            <span class="duration-text">${fDur(route.totalDuration)}</span>
+          </div>
+          <div class="col-bag-icons">
+            <div class="bag-icons">
+              <img src="${A.backpack}" alt="" style="opacity:${hasBackpack?1:0.25}">
+              <img src="${A.handbag}"  alt="" style="opacity:${hasCarryon?1:0.25}">
+              <img src="${A.suitcase}" alt="" style="opacity:${hasSuitcase?1:0.25}">
+            </div>
+            <img src="${A.chevDown}" class="chevron-icon" alt="">
+          </div>
+        </div>
+      </div>`;
+    }
+
+    function renderPricebox(item) {
+      const main    = item.priceDetail?.mainFare||{};
+      const hasDisc = (item.priceDetail?.discountDetail?.amount||0)>0;
+      const points  = item.loyaltyInfo?.accrualPoints;
+      const amount  = main.amount||0;
+      const taxes   = Math.round(amount*0.42);
+      const total   = amount+taxes;
+      return `<div class="cluster-pricebox">
+        <div class="pricebox-section">
+          <span class="price-label">Precio por adulto</span>
+          ${hasDisc&&main.amountWithoutDiscount?`<span class="price-original">$ ${fPrice(main.amountWithoutDiscount)}</span>`:''}
+          <div class="price-main">
+            <span class="price-currency">$</span>
+            <span class="price-amount">${fPrice(amount)}</span>
+          </div>
+          <div class="price-breakdown">
+            <div class="price-row"><span class="price-row-label">1 Adulto</span><span class="price-row-value">$ ${fPrice(amount)}</span></div>
+            <div class="price-row"><span class="price-row-label">Impuestos y tasas</span><span class="price-row-value">$ ${fPrice(taxes)}</span></div>
+          </div>
+        </div>
+        <div class="pricebox-section">
+          <div class="price-final-row">
+            <span class="price-final-label">Precio final</span>
+            <div class="price-final-values">
+              <span class="price-final-total">$ ${fPrice(total)}</span>
+              ${points?`<span class="price-final-points">o ${fPrice(points)} pts</span>`:''}
+            </div>
+          </div>
+          <button class="btn-buy">Comprar</button>
+          <button class="btn-add"><img src="${A.trolley}" alt=""> Agregar</button>
+        </div>
+      </div>`;
+    }
+
+    function renderCluster(ci) {
+      const item     = ci.item;
+      const outbound = item.routeChoices.find(r=>r.type==='OUTBOUND');
+      const inbound  = item.routeChoices.find(r=>r.type==='INBOUND');
+      const airline  = item.airlines[0];
+      return `<div class="card-item">
+        <div class="cluster-card">
+          <div class="cluster-main">
+            ${renderLeg(true, outbound, airline)}
+            ${inbound?renderLeg(false, inbound, airline):''}
+            <div class="driver-row">${renderBadges(item)}</div>
+          </div>
+          ${renderPricebox(item)}
+        </div>
+      </div>`;
+    }
+
+    function renderTips(ti) {
+      const tips     = ti.item;
+      const tipBody  = tips.find(t=>['BANKING_PROMO','FLIGHT','PRICE_TREND'].includes(t.type));
+      const total    = tips.filter(t=>t.type!=='SOFIA_REDIRECT_TIP').length;
+      const text     = tipBody?.content||'Consultá con SOFIA para encontrar el mejor vuelo.';
+      return `<div class="sofia-banner card-item">
+        <div class="sofia-header">
+          <div class="sofia-title-wrap">
+            <img src="${A.ai}" class="sofia-icon" alt="SOFIA">
+            <span class="sofia-title">Sugerencias de SOFIA basadas en tu búsqueda</span>
+          </div>
+          <div class="sofia-pagination">
+            <img src="${A.chevLeft}" class="sofia-page-btn" alt="<">
+            <span class="sofia-count">1/${total||5}</span>
+            <img src="${A.chevRight}" class="sofia-page-btn" alt=">">
+          </div>
+        </div>
+        <p class="sofia-text">${text}</p>
+      </div>`;
+    }
+
+    function render(data) {
+      const clusters = data.items.filter(i=>i.itemType==='BIG_CLUSTER');
+      const origin = (data.origin?.name) || 'Buenos Aires';
+      const dest   = (data.destination?.name) || 'Mendoza';
+      document.getElementById('results-count').textContent =
+        `${clusters.length} vuelos · ${origin} → ${dest}`;
+      let html = '';
+      data.items.forEach(i => {
+        if(i.itemType==='BIG_CLUSTER')           html += renderCluster(i);
+        else if(i.itemType==='TRAVEL_SAGE_TIPS') html += renderTips(i);
+      });
+      document.getElementById('results-container').innerHTML = html;
+    }
+
+    /* ── Load data ── */
+    fetch('./flights.json')
+      .then(r => r.json())
+      .then(data => render(data))
+      .catch(() => {
+        document.getElementById('results-container').innerHTML =
+          '<p style="color:var(--color-error-500);">No se pudo cargar la data de vuelos.</p>';
+      });
+  </script>
+
+</body>
+</html>

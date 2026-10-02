@@ -1,0 +1,100 @@
+{
+  "library": "EVA",
+  "email": "eva@despegar.com",
+  "version": "3",
+  "full_version": "3.184.0",
+  "eva": {
+    "version": "3",
+    "components": [
+      "card",
+      "colours-variables-unbeatable",
+      "driver",
+      "input-field",
+      "logo-loyalty",
+      "pricing-points",
+      "separator",
+      "shadow",
+      "tag",
+      "luggage",
+      "pricebox-cluster",
+      "colours",
+      "positioning",
+      "text",
+      "rubik-font",
+      "reset",
+      "button",
+      "colours-variables",
+      "colours-variables-loyalty",
+      "heading",
+      "input",
+      "select",
+      "container",
+      "grid",
+      "hide-content"
+    ],
+    "icons": [
+      "search",
+      "flights-ui",
+      "cross",
+      "chevron-right",
+      "info",
+      "gift",
+      "loyalty-filled",
+      "star-filled",
+      "arrow-down",
+      "hotels-ui",
+      "close",
+      "star",
+      "backpack",
+      "handbag",
+      "suitecase",
+      "single",
+      "chevron-down"
+    ],
+    "teamMail": "luciano.fortain@despegar.com",
+    "teamName": "skill-eva-ui-4-designers",
+    "appName": "skill-eva-ui-4-designers",
+    "management": "UX",
+    "product": "flights",
+    "full_version": "3.0.0",
+    "paths": {
+      "font": "resources/fonts/",
+      "sprites": "resources/sprites/",
+      "images": "resources/images/"
+    },
+    "core": {
+      "add": [],
+      "remove": []
+    },
+    "brands": []
+  },
+  "package": "https://eva.despegar.design/uiinc/packages/tmp/1790962633072/eva-package.tar.gz",
+  "package_id": 1790962633072,
+  "generated": "2026-10-02T17:37:13.098Z",
+  "maintainers": [
+    {
+      "name": "Marcos Sanchez",
+      "email": "marsanchez@despegar.com"
+    },
+    {
+      "name": "Esteban Coria",
+      "email": "esteban.coria@despegar.com"
+    },
+    {
+      "name": "Julián Schuster",
+      "email": "julian.schuster@despegar.com"
+    },
+    {
+      "name": "Julián Saidman",
+      "email": "julian.saidman@despegar.com"
+    },
+    {
+      "name": "Leandro Echevarría",
+      "email": "leandro.echevarria@despegar.com"
+    },
+    {
+      "name": "Silvio Vitullo",
+      "email": "silvio.vitullo@despegar.com"
+    }
+  ]
+}

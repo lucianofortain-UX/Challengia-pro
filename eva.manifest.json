@@ -1,0 +1,12 @@
+{
+  "eva": {
+    "version": "3",
+    "components": ["button", "card", "input-field", "tag", "pricebox-cluster", "driver", "luggage", "separator", "heading"],
+    "icons": ["search", "flights-ui", "cross", "chevron-right", "info", "gift", "loyalty-filled", "star-filled"],
+    "teamMail": "luciano.fortain@despegar.com",
+    "teamName": "skill-eva-ui-4-designers",
+    "appName": "skill-eva-ui-4-designers",
+    "management": "UX",
+    "product": "flights"
+  }
+}
