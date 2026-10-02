@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Vuelos · Despegar</title>
+  <link rel="stylesheet" href="./eva/eva-core.min.css">
+  <link rel="stylesheet" href="./eva/eva.min.css">
+  <style>
+    /* ─── EVA UI + Despegar palette (fallback sin EVA descargado) ─── */
+    :root {
+      --eva-3-color-primary:       #1B4DC8;
+      --eva-3-color-primary-dark:  #0D3AA0;
+      --eva-3-color-primary-light: #E8EFFC;
+      --eva-3-color-secondary:     #FF6B00;
+      --eva-3-color-success:       #00A651;
+      --eva-3-color-warning:       #F5A623;
+      --eva-3-color-error:         #D8232A;
+      --eva-3-color-neutral-900:   #1A1A2E;
+      --eva-3-color-neutral-700:   #374151;
+      --eva-3-color-neutral-500:   #6B7280;
+      --eva-3-color-neutral-300:   #D1D5DB;
+      --eva-3-color-neutral-100:   #F3F4F6;
+      --eva-3-color-white:         #FFFFFF;
+      --eva-3-radius-sm:           8px;
+      --eva-3-radius-md:           12px;
+      --eva-3-radius-lg:           20px;
+      --eva-3-shadow-sm:           0 1px 4px rgba(0,0,0,.07);
+      --eva-3-shadow-md:           0 4px 16px rgba(0,0,0,.11);
+      --eva-3-font:                -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --header-h:                  60px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: #EEF3FB; }
+    body { font-family: var(--eva-3-font); color: var(--eva-3-color-neutral-900); -webkit-font-smoothing: antialiased; }
+
+    /* ── Inline SVG icons ── */
+    .icon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .icon svg { display: block; }
+
+    /* ── Screens ── */
+    .screen {
+      position: fixed; inset: 0;
+      overflow-y: auto; overflow-x: hidden;
+      background: #EEF3FB;
+      transition: transform 0.34s cubic-bezier(0.4,0,0.2,1);
+      will-change: transform;
+      -webkit-overflow-scrolling: touch;
+    }
+    .screen--hidden { display: none; }
+
+    /* ── Max-width wrapper ── */
+    .container { max-width: 920px; margin: 0 auto; padding: 0 16px; }
+
+    /* ════════════════════════════════
+       DESPEGAR HEADER
+    ════════════════════════════════ */
+    .desp-header {
+      position: sticky; top: 0; z-index: 200;
+      background: #fff;
+      border-bottom: 1px solid #E8EDF5;
+      height: var(--header-h);
+      box-shadow: 0 1px 6px rgba(0,0,0,.06);
+    }
+    .desp-header .container {
+      height: 100%;
+      display: flex; align-items: center; gap: 0;
+    }
+    .desp-logo {
+      font-size: 22px; font-weight: 900; letter-spacing: -1px;
+      margin-right: 32px; flex-shrink: 0; cursor: pointer;
+      user-select: none;
+    }
+    .desp-logo .l-blue { color: #1B4DC8; }
+    .desp-logo .l-orange { color: #FF6B00; }
+
+    .desp-nav { display: flex; align-items: center; gap: 2px; flex: 1; }
+    .desp-nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 8px 12px; border-radius: 8px; cursor: pointer;
+      text-decoration: none; color: var(--eva-3-color-neutral-500);
+      font-size: 11px; font-weight: 600; transition: all .15s;
+      border-bottom: 2px solid transparent;
+    }
+    .desp-nav-item:hover { color: var(--eva-3-color-primary); background: var(--eva-3-color-primary-light); }
+    .desp-nav-item--active { color: var(--eva-3-color-primary); border-bottom-color: var(--eva-3-color-primary); }
+    .desp-nav-item svg { width: 18px; height: 18px; }
+
+    .desp-header-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .desp-user-btn {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--eva-3-color-primary-light); border: none;
+      border-radius: 20px; padding: 7px 14px 7px 10px;
+      cursor: pointer; font-family: var(--eva-3-font); font-size: 13px;
+      font-weight: 700; color: var(--eva-3-color-primary);
+    }
+    .desp-user-avatar {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--eva-3-color-primary); color: white;
+      font-size: 11px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+    }
+    @media (max-width: 600px) {
+      .desp-nav-item span { display: none; }
+      .desp-nav-item { padding: 8px 9px; }
+      .desp-logo { margin-right: 10px; font-size: 18px; }
+    }
+
+    /* ── Back header (screens 2+3) ── */
+    .back-header {
+      position: sticky; top: 0; z-index: 200;
+      background: #fff; border-bottom: 1px solid #E8EDF5;
+      height: var(--header-h);
+      box-shadow: 0 1px 6px rgba(0,0,0,.06);
+    }
+    .back-header .container {
+      height: 100%; display: flex; align-items: center; gap: 12px;
+    }
+    .btn-back {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1.5px solid var(--eva-3-color-neutral-300);
+      background: white; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--eva-3-color-neutral-700); flex-shrink: 0;
+      transition: all .15s;
+    }
+    .btn-back:hover { background: var(--eva-3-color-primary-light); border-color: var(--eva-3-color-primary); color: var(--eva-3-color-primary); }
+    .back-header-title { font-size: 15px; font-weight: 800; color: var(--eva-3-color-neutral-900); }
+    .step-indicator { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+    .step-dot {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 800;
+      border: 2px solid var(--eva-3-color-neutral-300);
+      color: var(--eva-3-color-neutral-500); background: white;
+    }
+    .step-dot--done { background: var(--eva-3-color-success); border-color: var(--eva-3-color-success); color: white; }
+    .step-dot--active { background: var(--eva-3-color-primary); border-color: var(--eva-3-color-primary); color: white; }
+    .step-line { width: 20px; height: 2px; background: var(--eva-3-color-neutral-300); }
+    .step-line--done { background: var(--eva-3-color-success); }
+    @media (max-width: 480px) { .step-indicator { display: none; } }
+
+    /* ════════════════════════════════
+       HERO (Screen 1)
+    ════════════════════════════════ */
+    .hero {
+      background: linear-gradient(155deg, #0D3AA0 0%, #1B4DC8 55%, #2563EB 100%);
+      padding: 22px 0 30px;
+    }
+    .hero .container {}
+    .hero-greeting { font-size: 12.5px; color: rgba(255,255,255,.7); margin-bottom: 3px; font-weight: 500; }
+    .hero-name { font-size: 24px; font-weight: 900; color: white; margin-bottom: 16px; letter-spacing: -.3px; }
+    .hero-search {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 14px; padding: 13px 16px;
+      display: flex; align-items: center; gap: 10px; margin-bottom: 13px;
+      color: white;
+    }
+    .hero-search-route { font-size: 16px; font-weight: 800; }
+    .hero-search-sep { opacity: .5; font-size: 13px; }
+    .hero-search-meta { font-size: 12px; opacity: .75; margin-left: auto; text-align: right; line-height: 1.4; }
+    .hero-chips { display: flex; gap: 7px; flex-wrap: wrap; }
+    .hero-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 20px; padding: 5px 12px;
+      font-size: 11.5px; font-weight: 600; color: white;
+    }
+    .hero-chip svg { width: 13px; height: 13px; }
+
+    /* ════════════════════════════════
+       CONTENT AREA
+    ════════════════════════════════ */
+    .content { padding: 16px 0 120px; }
+
+    /* ── Personalization banner ── */
+    .pers-banner {
+      background: white;
+      border-radius: var(--eva-3-radius-md);
+      border-left: 4px solid var(--eva-3-color-primary);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--eva-3-shadow-sm);
+      display: flex; gap: 12px; align-items: flex-start;
+    }
+    .pers-banner-icon {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--eva-3-color-primary-light);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .pers-banner-icon svg { width: 18px; height: 18px; color: var(--eva-3-color-primary); }
+    .pers-banner-title { font-size: 13px; font-weight: 800; margin-bottom: 3px; }
+    .pers-banner-text { font-size: 12px; color: var(--eva-3-color-neutral-500); line-height: 1.5; }
+
+    .section-label {
+      font-size: 11px; font-weight: 700; letter-spacing: .7px;
+      text-transform: uppercase; color: var(--eva-3-color-neutral-500);
+      margin-bottom: 10px;
+    }
+
+    /* ════════════════════════════════
+       FLIGHT CARD (EVA card)
+    ════════════════════════════════ */
+    .eva-3-card {
+      background: white;
+      border-radius: var(--eva-3-radius-md);
+      box-shadow: var(--eva-3-shadow-sm);
+      margin-bottom: 12px;
+      overflow: hidden;
+      border: 1.5px solid #E8EDF5;
+      transition: box-shadow .15s, border-color .15s;
+    }
+    .eva-3-card:hover { box-shadow: var(--eva-3-shadow-md); }
+    .eva-3-card--recommended { border-color: var(--eva-3-color-primary); }
+
+    /* Card top bar */
+    .card-top {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--eva-3-color-neutral-100);
+    }
+    .airline-identity { display: flex; align-items: center; gap: 10px; }
+
+    /* ── Airline logo SVGs ── */
+    .airline-logo {
+      width: 44px; height: 44px; border-radius: 10px;
+      overflow: hidden; flex-shrink: 0;
+      box-shadow: 0 1px 4px rgba(0,0,0,.12);
+    }
+    .airline-logo svg { width: 100%; height: 100%; display: block; }
+
+    .airline-name-wrap {}
+    .airline-name-text { font-size: 13px; font-weight: 800; color: var(--eva-3-color-neutral-900); }
+    .airline-code-text { font-size: 10.5px; color: var(--eva-3-color-neutral-500); margin-top: 1px; }
+
+    /* Badges */
+    .eva-3-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      border-radius: 20px; padding: 3px 9px;
+      font-size: 10.5px; font-weight: 700;
+    }
+    .eva-3-badge svg { width: 11px; height: 11px; }
+    .eva-3-badge--recommended { background: var(--eva-3-color-primary-light); color: var(--eva-3-color-primary); }
+    .eva-3-badge--sponsored   { background: #F3F4F6; color: #6B7280; }
+    .eva-3-badge--direct      { background: #E6F9F0; color: #00703A; }
+    .eva-3-badge--stop        { background: #FFF8E1; color: #7D5100; }
+    .eva-3-badge--discount    { background: #FFF3E0; color: #C04000; }
+
+    /* Legs */
+    .card-legs { padding: 12px 14px 8px; }
+    .leg-label-row {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 10px; font-weight: 700; letter-spacing: .6px;
+      text-transform: uppercase; color: var(--eva-3-color-neutral-500);
+      margin-bottom: 9px;
+    }
+    .leg-label-row svg { width: 13px; height: 13px; }
+    .leg-grid {
+      display: grid; grid-template-columns: 1fr auto 1fr;
+      align-items: center; gap: 8px; margin-bottom: 10px;
+    }
+    .leg-time { font-size: 22px; font-weight: 900; color: var(--eva-3-color-neutral-900); line-height: 1; }
+    .leg-airport { font-size: 11.5px; color: var(--eva-3-color-neutral-500); margin-top: 2px; }
+    .leg-airport--warn { color: var(--eva-3-color-error); font-weight: 700; }
+    .leg-center { text-align: center; min-width: 80px; }
+    .leg-dur { font-size: 11.5px; font-weight: 700; color: var(--eva-3-color-neutral-700); margin-bottom: 4px; }
+    .leg-line { display: flex; align-items: center; margin: 3px 0; }
+    .leg-dot { width: 5px; height: 5px; border-radius: 50%; background: #9CA3AF; flex-shrink: 0; }
+    .leg-bar { flex: 1; height: 1.5px; background: #D1D5DB; }
+    .leg-stop-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--eva-3-color-warning); flex-shrink: 0; outline: 2px solid #fff; }
+    .leg-right { text-align: right; }
+    .leg-divider { height: 1px; background: #F3F4F6; margin: 2px 0 10px; }
+
+    /* Quick details row */
+    .card-details {
+      display: flex; gap: 12px; flex-wrap: wrap;
+      padding: 9px 14px;
+      background: #F9FAFB;
+      border-top: 1px solid var(--eva-3-color-neutral-100);
+    }
+    .d-chip {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11.5px; color: var(--eva-3-color-neutral-700);
+    }
+    .d-chip svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .d-chip--muted { color: var(--eva-3-color-neutral-500); }
+    .d-chip--ok svg { color: var(--eva-3-color-success); }
+    .d-chip--warn { color: var(--eva-3-color-error); font-weight: 700; }
+
+    /* Card footer */
+    .card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px 14px; gap: 14px;
+      border-top: 1px solid var(--eva-3-color-neutral-100);
+    }
+    .price-was { font-size: 11.5px; color: #9CA3AF; text-decoration: line-through; }
+    .price-main { font-size: 24px; font-weight: 900; color: var(--eva-3-color-neutral-900); line-height: 1; letter-spacing: -.5px; }
+    .price-currency { font-size: 14px; font-weight: 700; }
+    .price-sub { font-size: 10.5px; color: var(--eva-3-color-neutral-500); margin-top: 3px; }
+    .price-inst { font-size: 11.5px; color: var(--eva-3-color-primary); font-weight: 600; margin-top: 3px; }
+    .price-inst--green { color: var(--eva-3-color-success); }
+
+    /* EVA buttons */
+    .eva-3-button {
+      border: none; border-radius: var(--eva-3-radius-sm);
+      font-family: var(--eva-3-font); font-weight: 800;
+      cursor: pointer; transition: all .15s;
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 6px; white-space: nowrap; font-size: 13.5px; letter-spacing: .1px;
+    }
+    .eva-3-button--primary {
+      background: var(--eva-3-color-primary); color: white; padding: 11px 22px;
+    }
+    .eva-3-button--primary:hover { background: var(--eva-3-color-primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(27,77,200,.3); }
+    .eva-3-button--secondary {
+      background: white; color: var(--eva-3-color-primary);
+      border: 2px solid var(--eva-3-color-primary); padding: 9px 20px;
+    }
+    .eva-3-button--secondary:hover { background: var(--eva-3-color-primary-light); }
+    .eva-3-button--cta {
+      background: var(--eva-3-color-secondary); color: white; padding: 13px 28px; font-size: 15px;
+      border-radius: var(--eva-3-radius-md);
+    }
+    .eva-3-button--cta:hover { background: #E05C00; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(255,107,0,.35); }
+    .eva-3-button--full { width: 100%; justify-content: center; }
+
+    /* ════════════════════════════════
+       SCREEN 2 — DETAIL
+    ════════════════════════════════ */
+    .detail-grid {
+      display: grid; grid-template-columns: 1fr; gap: 12px;
+    }
+    @media (min-width: 700px) {
+      .detail-grid { grid-template-columns: 1fr 320px; align-items: start; }
+      .detail-sidebar { position: sticky; top: calc(var(--header-h) + 16px); }
+    }
+
+    .detail-section {
+      background: white; border-radius: var(--eva-3-radius-md);
+      box-shadow: var(--eva-3-shadow-sm); overflow: hidden;
+      margin-bottom: 12px; border: 1px solid #E8EDF5;
+    }
+    .detail-section-head {
+      padding: 13px 16px; border-bottom: 1px solid #F3F4F6;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .detail-section-title { font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 7px; }
+    .detail-section-title svg { width: 16px; height: 16px; color: var(--eva-3-color-primary); }
+    .detail-section-body { padding: 14px 16px; }
+
+    /* Passengers */
+    .pax-list { display: flex; flex-direction: column; gap: 9px; }
+    .pax-row {
+      display: flex; align-items: center; gap: 11px;
+      padding: 10px 12px; border-radius: var(--eva-3-radius-sm);
+      background: var(--eva-3-color-primary-light);
+    }
+    .pax-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      color: white; font-size: 14px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .pax-name-text { font-size: 13px; font-weight: 800; }
+    .pax-type-text { font-size: 11px; color: var(--eva-3-color-neutral-500); margin-top: 1px; }
+    .pax-edit { margin-left: auto; font-size: 12px; color: var(--eva-3-color-primary); font-weight: 700; cursor: pointer; }
+
+    /* Seat map */
+    .seat-suggestion {
+      background: var(--eva-3-color-primary-light); border: 1px solid #C7D2FE;
+      border-radius: var(--eva-3-radius-sm); padding: 10px 12px;
+      font-size: 12px; color: var(--eva-3-color-primary); font-weight: 600;
+      margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .seat-suggestion svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .seat-map-wrap { overflow-x: auto; }
+    .seat-map { display: flex; flex-direction: column; gap: 4px; min-width: 240px; }
+    .seat-row-wrap { display: flex; align-items: center; gap: 4px; }
+    .seat-row-num { width: 18px; font-size: 9.5px; color: #9CA3AF; text-align: right; flex-shrink: 0; }
+    .seat-aisle { width: 10px; }
+    .seat-letters { display: flex; gap: 4px; margin-bottom: 4px; margin-left: 22px; }
+    .seat-ltr { width: 32px; text-align: center; font-size: 9.5px; font-weight: 700; color: #9CA3AF; }
+    .seat-ltr-aisle { width: 10px; }
+    .seat {
+      width: 32px; height: 28px; border-radius: 5px 5px 3px 3px;
+      border: 1.5px solid #D1D5DB; background: white;
+      font-size: 9px; font-weight: 700; color: #9CA3AF;
+      cursor: pointer; transition: all .12s; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .seat:hover:not(.seat--occ):not(.seat--sel):not(.seat--infant) {
+      background: var(--eva-3-color-primary-light); border-color: var(--eva-3-color-primary); color: var(--eva-3-color-primary);
+    }
+    .seat--occ { background: #F3F4F6; cursor: default; }
+    .seat--sel { background: var(--eva-3-color-primary); border-color: var(--eva-3-color-primary); color: white; }
+    .seat--infant { background: #FFF8E1; border-color: #FFC107; cursor: default; }
+    .seat-legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+    .seat-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--eva-3-color-neutral-700); }
+    .seat-legend-swatch { width: 14px; height: 11px; border-radius: 3px; border: 1.5px solid; }
+
+    /* Baggage */
+    .baggage-list { display: flex; flex-direction: column; gap: 9px; }
+    .baggage-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+    .baggage-row svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .text-ok { color: var(--eva-3-color-success); font-weight: 700; }
+    .text-muted { color: var(--eva-3-color-neutral-500); }
+
+    /* Sidebar price card */
+    .price-sidebar {
+      background: white; border-radius: var(--eva-3-radius-md);
+      border: 1px solid #E8EDF5; box-shadow: var(--eva-3-shadow-sm); overflow: hidden;
+    }
+    .price-sidebar-head { background: var(--eva-3-color-primary); padding: 14px 16px; }
+    .price-sidebar-route { font-size: 14px; font-weight: 800; color: white; }
+    .price-sidebar-meta { font-size: 11px; color: rgba(255,255,255,.75); margin-top: 3px; }
+    .price-sidebar-body { padding: 16px; }
+    .price-breakdown-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 7px 0; border-bottom: 1px solid #F3F4F6;
+      font-size: 12.5px;
+    }
+    .price-breakdown-row:last-child { border-bottom: none; }
+    .price-breakdown-label { color: var(--eva-3-color-neutral-700); }
+    .price-breakdown-value { font-weight: 700; }
+    .price-breakdown-free { color: var(--eva-3-color-success); font-weight: 700; }
+    .price-breakdown-discount { color: var(--eva-3-color-success); }
+    .price-total-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 0 4px; border-top: 2px solid var(--eva-3-color-neutral-900);
+      margin-top: 4px;
+    }
+    .price-total-label { font-size: 14px; font-weight: 800; }
+    .price-total-value { font-size: 22px; font-weight: 900; color: var(--eva-3-color-primary); letter-spacing: -.5px; }
+    .price-sidebar-cta { padding: 0 16px 16px; }
+    .price-inst-note { font-size: 11.5px; color: var(--eva-3-color-primary); font-weight: 600; text-align: center; margin-bottom: 10px; }
+
+    /* Mobile sticky bottom (screens 2+3 on small screens) */
+    .sticky-mob {
+      display: none;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+      box-shadow: 0 -4px 20px rgba(0,0,0,.10); z-index: 100;
+    }
+    @media (max-width: 699px) { .sticky-mob { display: block; } .price-sidebar { display: none; } }
+
+    /* ════════════════════════════════
+       SCREEN 3 — PAYMENT
+    ════════════════════════════════ */
+    .payment-grid {
+      display: grid; grid-template-columns: 1fr; gap: 12px;
+    }
+    @media (min-width: 700px) {
+      .payment-grid { grid-template-columns: 1fr 340px; align-items: start; }
+      .payment-summary-col { position: sticky; top: calc(var(--header-h) + 16px); }
+    }
+
+    .order-summary-card {
+      background: linear-gradient(145deg, #0D3AA0, #1B4DC8);
+      border-radius: var(--eva-3-radius-md); padding: 16px; color: white;
+      margin-bottom: 12px;
+    }
+    .order-sum-label { font-size: 10.5px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; opacity: .75; margin-bottom: 8px; }
+    .order-sum-route { font-size: 18px; font-weight: 900; margin-bottom: 2px; }
+    .order-sum-meta { font-size: 12px; opacity: .75; }
+    .order-sum-chips { display: flex; gap: 7px; margin-top: 12px; flex-wrap: wrap; }
+    .order-sum-chip {
+      background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.25);
+      border-radius: 20px; padding: 4px 10px;
+      font-size: 11px; font-weight: 600; color: white;
+    }
+
+    .breakdown-card {
+      background: white; border-radius: var(--eva-3-radius-md);
+      padding: 16px; box-shadow: var(--eva-3-shadow-sm);
+      border: 1px solid #E8EDF5; margin-bottom: 12px;
+    }
+    .breakdown-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--eva-3-color-neutral-500); margin-bottom: 12px; }
+    .breakdown-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid #F3F4F6; font-size: 13px;
+    }
+    .breakdown-row:last-child { border-bottom: none; }
+    .breakdown-total-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 12px; margin-top: 6px; border-top: 2px solid var(--eva-3-color-neutral-900);
+    }
+    .breakdown-total-label { font-size: 15px; font-weight: 900; }
+    .breakdown-total-value { font-size: 22px; font-weight: 900; color: var(--eva-3-color-primary); letter-spacing: -.5px; }
+    .green { color: var(--eva-3-color-success); font-weight: 700; }
+
+    .bank-promo-card {
+      background: #FFF8E1; border: 1.5px solid #FFE082;
+      border-radius: var(--eva-3-radius-sm); padding: 12px 14px;
+      display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px;
+    }
+    .bank-promo-card svg { width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px; color: #B45309; }
+    .bank-promo-text { font-size: 12px; color: #6D4C00; line-height: 1.5; }
+
+    .pay-form-card {
+      background: white; border-radius: var(--eva-3-radius-md);
+      padding: 18px; box-shadow: var(--eva-3-shadow-sm);
+      border: 1px solid #E8EDF5; margin-bottom: 12px;
+    }
+    .form-section-title {
+      font-size: 13px; font-weight: 800; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .form-section-title svg { width: 17px; height: 17px; color: var(--eva-3-color-primary); }
+    .eva-3-label { display: block; font-size: 11.5px; font-weight: 700; color: var(--eva-3-color-neutral-700); margin-bottom: 6px; }
+    .eva-3-input {
+      width: 100%; border: 1.5px solid var(--eva-3-color-neutral-300);
+      border-radius: var(--eva-3-radius-sm); padding: 12px 13px;
+      font-size: 14px; font-family: var(--eva-3-font);
+      color: var(--eva-3-color-neutral-900); background: white;
+      margin-bottom: 12px; outline: none; transition: border-color .15s;
+    }
+    .eva-3-input:focus { border-color: var(--eva-3-color-primary); box-shadow: 0 0 0 3px var(--eva-3-color-primary-light); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .card-input-wrap { position: relative; }
+    .card-input-wrap .eva-3-input { padding-right: 56px; font-family: monospace; letter-spacing: 1.5px; }
+    .card-brands { position: absolute; right: 11px; top: 50%; transform: translateY(-70%); display: flex; gap: 4px; }
+    .card-brand {
+      width: 28px; height: 18px; border-radius: 3px;
+      font-size: 6.5px; font-weight: 900; color: white;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .brand-mc { background: linear-gradient(90deg, #EB001B 45%, #F79E1B 55%); }
+    .brand-visa { background: #1A1F71; font-size: 7px; letter-spacing: -.2px; }
+
+    .confirm-box {
+      background: white; border-radius: var(--eva-3-radius-md);
+      border: 1px solid #E8EDF5; overflow: hidden;
+    }
+    .confirm-box-head { background: #F9FAFB; padding: 14px 16px; border-bottom: 1px solid #E8EDF5; }
+    .confirm-box-total-label { font-size: 11px; color: var(--eva-3-color-neutral-500); font-weight: 600; }
+    .confirm-box-total { font-size: 28px; font-weight: 900; color: var(--eva-3-color-primary); letter-spacing: -.5px; }
+    .confirm-box-inst { font-size: 11.5px; color: var(--eva-3-color-neutral-500); margin-top: 2px; }
+    .confirm-box-body { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .confirm-secure { text-align: center; font-size: 11px; color: var(--eva-3-color-neutral-500); display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .confirm-secure svg { width: 13px; height: 13px; color: var(--eva-3-color-success); }
+
+    /* ── Success Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.5);
+      display: none; align-items: center; justify-content: center;
+      z-index: 500; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: white; border-radius: 20px; padding: 32px 24px;
+      text-align: center; max-width: 360px; width: 100%;
+      animation: popIn .4s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes popIn { from { opacity:0; transform:scale(.85); } to { opacity:1; transform:scale(1); } }
+    .modal-icon { font-size: 52px; margin-bottom: 12px; }
+    .modal-title { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+    .modal-sub { font-size: 13.5px; color: var(--eva-3-color-neutral-500); line-height: 1.55; }
+    .modal-code {
+      font-size: 12px; font-weight: 800; color: var(--eva-3-color-primary);
+      background: var(--eva-3-color-primary-light); padding: 9px 16px;
+      border-radius: 8px; margin-top: 14px; display: inline-block;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     SVG ICON DEFS
+════════════════════════════════════════════ -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="ic-plane" viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" fill="currentColor"/></symbol>
+  <symbol id="ic-luggage" viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1.25C18 3.2 16.8 2 15.25 2h-6.5C7.2 2 6 3.2 6 4.75c0 .37.11.81.18 1.25H4C2.9 6 2 6.9 2 8v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM9.5 3.75h5v.5h-5v-.5zM20 20H4V8h16v12z" fill="currentColor"/></symbol>
+  <symbol id="ic-backpack" viewBox="0 0 24 24"><path d="M17 7.5V7c0-2.76-2.24-5-5-5S7 4.24 7 7v.5C5.34 8.24 4 9.75 4 11.6V19c0 1.66 1.34 3 3 3h10c1.66 0 3-1.34 3-3v-7.4c0-1.85-1.34-3.36-3-3.1zm-5-4.5c1.65 0 3 1.35 3 3v.39C13.64 6.16 12.82 6 12 6s-1.64.16-2.24.39H9.77V6c0-1.65 1.35-3 3-3zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z" fill="currentColor"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor"/></symbol>
+  <symbol id="ic-warn" viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" fill="currentColor"/></symbol>
+  <symbol id="ic-info" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" fill="currentColor"/></symbol>
+  <symbol id="ic-star" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="currentColor"/></symbol>
+  <symbol id="ic-person" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/></symbol>
+  <symbol id="ic-infant" viewBox="0 0 24 24"><circle cx="12" cy="4" r="2" fill="currentColor"/><path d="M15.89 8.11C15.13 7.35 13.78 7 12 7s-3.13.35-3.89 1.11L5 11h2l.8-1H8v7h2v-4h4v4h2V10h.2l.8 1h2l-3.11-2.89z" fill="currentColor"/></symbol>
+  <symbol id="ic-card" viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z" fill="currentColor"/></symbol>
+  <symbol id="ic-seat" viewBox="0 0 24 24"><path d="M4 16v-3.08C3.4 12.57 3 11.83 3 11V5c0-1.1.9-2 2-2h9c1.1 0 2 .9 2 2v6c0 .83-.4 1.57-1 2.08V16c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2zm14 1h-2v2h-2v-3h-1c-1.1 0-2-.9-2-2v-1h8v1c0 1.1-.9 2-2 2v1z" fill="currentColor"/></symbol>
+  <symbol id="ic-lock" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" fill="currentColor"/></symbol>
+  <symbol id="ic-arrow-left" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" fill="currentColor"/></symbol>
+  <symbol id="ic-hotel" viewBox="0 0 24 24"><path d="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z" fill="currentColor"/></symbol>
+  <symbol id="ic-package" viewBox="0 0 24 24"><path d="M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z" fill="currentColor"/></symbol>
+  <symbol id="ic-car" viewBox="0 0 24 24"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" fill="currentColor"/></symbol>
+</svg>
+
+<!-- helper shorthand -->
+<script>
+function ic(id, size=16, color='currentColor') {
+  return `<svg width="${size}" height="${size}" style="color:${color};display:inline-block;vertical-align:middle;flex-shrink:0"><use href="#${id}"/></svg>`;
+}
+</script>
+
+
+<!-- ════════════════════════════════════════════
+     SCREEN 1 — RESULTADOS
+════════════════════════════════════════════ -->
+<div id="screen-results" class="screen" style="transform:translateX(0)">
+
+  <!-- Despegar Header -->
+  <header class="desp-header">
+    <div class="container">
+      <div class="desp-logo"><span class="l-blue">des</span><span class="l-orange">p</span><span class="l-blue">egar</span></div>
+      <nav class="desp-nav">
+        <a class="desp-nav-item desp-nav-item--active">
+          <svg width="18" height="18"><use href="#ic-plane"/></svg>
+          <span>Vuelos</span>
+        </a>
+        <a class="desp-nav-item">
+          <svg width="18" height="18"><use href="#ic-hotel"/></svg>
+          <span>Hoteles</span>
+        </a>
+        <a class="desp-nav-item">
+          <svg width="18" height="18"><use href="#ic-package"/></svg>
+          <span>Paquetes</span>
+        </a>
+        <a class="desp-nav-item">
+          <svg width="18" height="18"><use href="#ic-car"/></svg>
+          <span>Autos</span>
+        </a>
+      </nav>
+      <div class="desp-header-right">
+        <button class="desp-user-btn">
+          <div class="desp-user-avatar">S</div>
+          Sâmara
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="container">
+      <div class="hero-greeting">Bienvenida de vuelta</div>
+      <div class="hero-name">Hola, Sâmara</div>
+      <div class="hero-search">
+        <svg width="16" height="16" style="color:rgba(255,255,255,.7);flex-shrink:0"><use href="#ic-plane"/></svg>
+        <span class="hero-search-route">Buenos Aires &nbsp;⇄&nbsp; Mendoza</span>
+        <span class="hero-search-meta">20–25 oct 2026<br>3 pasajeros</span>
+      </div>
+      <div class="hero-chips">
+        <div class="hero-chip">
+          <svg width="13" height="13"><use href="#ic-star"/></svg>
+          Primera Clase preferida
+        </div>
+        <div class="hero-chip">
+          <svg width="13" height="13"><use href="#ic-person"/></svg>
+          2 adultos + beba
+        </div>
+        <div class="hero-chip">
+          <svg width="13" height="13"><use href="#ic-luggage"/></svg>
+          Con equipaje
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+    <div class="container">
+
+      <!-- Personalization banner -->
+      <div class="pers-banner">
+        <div class="pers-banner-icon">
+          <svg width="18" height="18"><use href="#ic-info"/></svg>
+        </div>
+        <div>
+          <div class="pers-banner-title">Encontramos lo mejor para tu familia</div>
+          <div class="pers-banner-text">
+            Esta ruta no tiene Primera Clase, así que filtramos por vuelos directos y con equipaje incluido — pensando en el viaje con tu beba. ¡Mirá las opciones!
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">3 opciones encontradas</div>
+
+      <!-- ── CARD 1: Flybondi — Recomendado ── -->
+      <div class="eva-3-card eva-3-card--recommended">
+        <div class="card-top">
+          <div class="airline-identity">
+            <!-- Flybondi logo SVG -->
+            <div class="airline-logo">
+              <svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+                <rect width="44" height="44" fill="#FFD400"/>
+                <text x="22" y="18" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="10" font-weight="900" fill="#3D0575">fly</text>
+                <text x="22" y="32" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="9" font-weight="900" fill="#3D0575">bondi</text>
+              </svg>
+            </div>
+            <div class="airline-name-wrap">
+              <div class="airline-name-text">Flybondi</div>
+              <div class="airline-code-text">JA3072 / JA3071</div>
+            </div>
+          </div>
+          <div class="eva-3-badge eva-3-badge--recommended">
+            <svg width="11" height="11"><use href="#ic-star"/></svg>
+            Recomendado para vos
+          </div>
+        </div>
+
+        <div class="card-legs">
+          <div class="leg-label-row">
+            <svg width="13" height="13"><use href="#ic-plane"/></svg>
+            Ida · Mar 20 oct
+            <span class="eva-3-badge eva-3-badge--direct" style="margin-left:4px">Directo</span>
+          </div>
+          <div class="leg-grid">
+            <div><div class="leg-time">06:00</div><div class="leg-airport">EZE · Ezeiza</div></div>
+            <div class="leg-center">
+              <div class="leg-dur">1h 59m</div>
+              <div class="leg-line"><div class="leg-dot"></div><div class="leg-bar"></div><div class="leg-dot"></div></div>
+            </div>
+            <div class="leg-right"><div class="leg-time">07:59</div><div class="leg-airport">MDZ · Mendoza</div></div>
+          </div>
+          <div class="leg-divider"></div>
+          <div class="leg-label-row">
+            <svg width="13" height="13" style="transform:scaleX(-1)"><use href="#ic-plane"/></svg>
+            Vuelta · Dom 25 oct
+            <span class="eva-3-badge eva-3-badge--direct" style="margin-left:4px">Directo</span>
+          </div>
+          <div class="leg-grid">
+            <div><div class="leg-time">08:54</div><div class="leg-airport">MDZ · Mendoza</div></div>
+            <div class="leg-center">
+              <div class="leg-dur">1h 39m</div>
+              <div class="leg-line"><div class="leg-dot"></div><div class="leg-bar"></div><div class="leg-dot"></div></div>
+            </div>
+            <div class="leg-right"><div class="leg-time">10:33</div><div class="leg-airport">EZE · Ezeiza</div></div>
+          </div>
+        </div>
+
+        <div class="card-details">
+          <div class="d-chip d-chip--ok">
+            <svg width="14" height="14" style="color:var(--eva-3-color-success)"><use href="#ic-luggage"/></svg>
+            1 maleta 23 kg incluida
+          </div>
+          <div class="d-chip d-chip--ok">
+            <svg width="14" height="14" style="color:var(--eva-3-color-success)"><use href="#ic-backpack"/></svg>
+            Mochila incluida
+          </div>
+          <div class="d-chip">
+            <svg width="14" height="14" style="color:var(--eva-3-color-neutral-500)"><use href="#ic-seat"/></svg>
+            Economy · A320
+          </div>
+          <div class="d-chip" style="color:var(--eva-3-color-success);font-weight:700">
+            <svg width="14" height="14" style="color:var(--eva-3-color-success)"><use href="#ic-infant"/></svg>
+            Beba sin cargo
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <div>
+            <div class="price-main"><span class="price-currency">$</span> 669.906</div>
+            <div class="price-sub">Precio total · 2 adultos · beba sin cargo</div>
+            <div class="price-inst">Hasta 12 cuotas · MasterCard Galicia</div>
+          </div>
+          <button class="eva-3-button eva-3-button--primary" onclick="selectFlight('flybondi1')">Comprar</button>
+        </div>
+      </div>
+
+      <!-- ── CARD 2: LATAM ── -->
+      <div class="eva-3-card">
+        <div class="card-top">
+          <div class="airline-identity">
+            <!-- LATAM logo SVG -->
+            <div class="airline-logo">
+              <svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+                <rect width="44" height="44" fill="#C8102E"/>
+                <text x="22" y="27" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="12" font-weight="900" fill="white">LATAM</text>
+              </svg>
+            </div>
+            <div class="airline-name-wrap">
+              <div class="airline-name-text">LATAM Argentina</div>
+              <div class="airline-code-text">LA1502 / LA1503</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-legs">
+          <div class="leg-label-row">
+            <svg width="13" height="13"><use href="#ic-plane"/></svg>
+            Ida · Mar 20 oct
+            <span class="eva-3-badge eva-3-badge--direct" style="margin-left:4px">Directo</span>
+          </div>
+          <div class="leg-grid">
+            <div><div class="leg-time">08:15</div><div class="leg-airport">AEP · Aeroparque</div></div>
+            <div class="leg-center">
+              <div class="leg-dur">2h 05m</div>
+              <div class="leg-line"><div class="leg-dot"></div><div class="leg-bar"></div><div class="leg-dot"></div></div>
+            </div>
+            <div class="leg-right"><div class="leg-time">10:20</div><div class="leg-airport">MDZ · Mendoza</div></div>
+          </div>
+          <div class="leg-divider"></div>
+          <div class="leg-label-row">
+            <svg width="13" height="13" style="transform:scaleX(-1)"><use href="#ic-plane"/></svg>
+            Vuelta · Dom 25 oct
+            <span class="eva-3-badge eva-3-badge--direct" style="margin-left:4px">Directo</span>
+          </div>
+          <div class="leg-grid">
+            <div><div class="leg-time">13:40</div><div class="leg-airport">MDZ · Mendoza</div></div>
+            <div class="leg-center">
+              <div class="leg-dur">2h 05m</div>
+              <div class="leg-line"><div class="leg-dot"></div><div class="leg-bar"></div><div class="leg-dot"></div></div>
+            </div>
+            <div class="leg-right"><div class="leg-time">15:45</div><div class="leg-airport">AEP · Aeroparque</div></div>
+          </div>
+        </div>
+
+        <div class="card-details">
+          <div class="d-chip d-chip--ok">
+            <svg width="14" height="14" style="color:var(--eva-3-color-success)"><use href="#ic-luggage"/></svg>
+            1 maleta 23 kg incluida
+          </div>
+          <div class="d-chip d-chip--ok">
+            <svg width="14" height="14" style="color:var(--eva-3-color-success)"><use href="#ic-backpack"/></svg>
+            Mochila incluida
+          </div>
+          <div class="d-chip">
+            <svg width="14" height="14" style="color:var(--eva-3-color-neutral-500)"><use href="#ic-seat"/></svg>
+            Economy · A319
+          </div>
+          <div class="d-chip" style="color:var(--eva-3-color-success);font-weight:700">
+            <svg width="14" height="14" style="color:var(--eva-3-color-success)"><use href="#ic-infant"/></svg>
+            Beba sin cargo
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <div>
+            <div class="price-main"><span class="price-currency">$</span> 589.800</div>
+            <div class="price-sub">Precio total · 2 adultos · beba sin cargo</div>
+            <div class="price-inst">Hasta 12 cuotas · MasterCard</div>
+          </div>
+          <button class="eva-3-button eva-3-button--secondary" onclick="selectFlight('latam')">Comprar</button>
+        </div>
+      </div>
+
+      <!-- ── CARD 3: Aerolíneas — patrocinado, escala ── -->
+      <div class="eva-3-card">
+        <div class="card-top">
+          <div class="airline-identity">
+            <!-- Aerolíneas Argentinas logo SVG -->
+            <div class="airline-logo">
+              <svg viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg">
+                <rect width="44" height="44" fill="#70C8DC"/>
+                <!-- simplified condor wings -->
+                <path d="M7 22 Q14 14 22 19 Q30 14 37 22" stroke="#0D4B6B" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                <path d="M11 24 Q16 18 22 21 Q28 18 33 24" stroke="#0D4B6B" stroke-width="2" fill="none" stroke-linecap="round"/>
+                <text x="22" y="36" text-anchor="middle" font-family="Arial, sans-serif" font-size="7" font-weight="900" fill="#0D4B6B">Aerolíneas</text>
+              </svg>
+            </div>
+            <div class="airline-name-wrap">
+              <div class="airline-name-text">Aerolíneas Argentinas</div>
+              <div class="airline-code-text">AR1416 / AR1569·AR1525</div>
+            </div>
+          </div>
+          <div class="eva-3-badge eva-3-badge--sponsored">Promocionado</div>
+        </div>
+
+        <div class="card-legs">
+          <div class="leg-label-row">
+            <svg width="13" height="13"><use href="#ic-plane"/></svg>
+            Ida · Mar 20 oct
+            <span class="eva-3-badge eva-3-badge--direct" style="margin-left:4px">Directo</span>
+          </div>
+          <div class="leg-grid">
+            <div>
+              <div class="leg-time">14:20</div>
+              <div class="leg-airport leg-airport--warn">EZE · Ezeiza</div>
+            </div>
+            <div class="leg-center">
+              <div class="leg-dur">2h 00m</div>
+              <div class="leg-line"><div class="leg-dot"></div><div class="leg-bar"></div><div class="leg-dot"></div></div>
+            </div>
+            <div class="leg-right"><div class="leg-time">16:20</div><div class="leg-airport">MDZ · Mendoza</div></div>
+          </div>
+          <div style="font-size:11px;color:var(--eva-3-color-error);display:flex;align-items:center;gap:5px;margin-bottom:8px;padding:5px 8px;background:#FEF2F2;border-radius:6px">
+            <svg width="12" height="12"><use href="#ic-warn"/></svg>
+            Aeropuerto distinto al buscado — sale desde Ezeiza (EZE)
+          </div>
+          <div class="leg-divider"></div>
+          <div class="leg-label-row">
+            <svg width="13" height="13" style="transform:scaleX(-1)"><use href="#ic-plane"/></svg>
+            Vuelta · Dom 25 oct
+            <span class="eva-3-badge eva-3-badge--stop" style="margin-left:4px">1 escala · COR</span>
+          </div>
+          <div class="leg-grid">
+            <div><div class="leg-time">10:40</div><div class="leg-airport">MDZ</div></div>
+            <div class="leg-center">
+              <div class="leg-dur">6h 30m</div>
+              <div class="leg-line">
+                <div class="leg-dot"></div>
+                <div class="leg-bar" style="background:#FBBF24"></div>
+                <div class="leg-stop-dot"></div>
+                <div class="leg-bar" style="background:#FBBF24"></div>
+                <div class="leg-dot"></div>
+              </div>
+            </div>
+            <div class="leg-right">
+              <div class="leg-time">17:10</div>
+              <div class="leg-airport leg-airport--warn">AEP · Aeroparque</div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:#7D5100;background:#FFFBEB;border-radius:6px;padding:5px 8px;margin-top:-4px">
+            Escala en Córdoba (COR) · 4h 05m de espera · cambio de avión
+          </div>
+        </div>
+
+        <div class="card-details">
+          <div class="d-chip d-chip--muted">
+            <svg width="14" height="14"><use href="#ic-luggage"/></svg>
+            Sin maleta (agregar)
+          </div>
+          <div class="d-chip d-chip--ok">
+            <svg width="14" height="14" style="color:var(--eva-3-color-success)"><use href="#ic-backpack"/></svg>
+            Mochila incluida
+          </div>
+          <div class="d-chip d-chip--warn">
+            <svg width="14" height="14"><use href="#ic-warn"/></svg>
+            Solo 4 asientos
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <div>
+            <div class="price-was">$ 504.348</div>
+            <div class="price-main"><span class="price-currency">$</span> 499.304</div>
+            <div class="price-sub">Con Galicia MasterCard · 2 adultos</div>
+            <div class="price-inst price-inst--green">Ahorrás $5.043 · hasta 6 cuotas</div>
+          </div>
+          <button class="eva-3-button eva-3-button--secondary" onclick="selectFlight('aerolineas')">Comprar</button>
+        </div>
+      </div>
+
+    </div><!-- /container -->
+  </div><!-- /content -->
+</div><!-- /screen-results -->
+
+
+<!-- ════════════════════════════════════════════
+     SCREEN 2 — DETALLE
+════════════════════════════════════════════ -->
+<div id="screen-detail" class="screen screen--hidden">
+
+  <header class="back-header">
+    <div class="container">
+      <button class="btn-back" onclick="goBack('detail','results')">
+        <svg width="18" height="18"><use href="#ic-arrow-left"/></svg>
+      </button>
+      <div class="back-header-title">Detalle del vuelo</div>
+      <div class="step-indicator">
+        <div class="step-dot step-dot--done"><svg width="12" height="12"><use href="#ic-check"/></svg></div>
+        <div class="step-line step-line--done"></div>
+        <div class="step-dot step-dot--active">2</div>
+        <div class="step-line"></div>
+        <div class="step-dot">3</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="container">
+      <div class="detail-grid">
+
+        <!-- Left column -->
+        <div>
+          <!-- Flight summary -->
+          <div class="detail-section">
+            <div class="detail-section-head" style="background:var(--eva-3-color-primary-light)">
+              <div class="detail-section-title">
+                <svg width="16" height="16"><use href="#ic-plane"/></svg>
+                <span id="d-airline-name">Flybondi</span>
+              </div>
+              <div id="d-direct-badge" class="eva-3-badge eva-3-badge--direct">Directo ambos tramos</div>
+            </div>
+            <div class="detail-section-body">
+              <div class="leg-label-row" style="margin-bottom:8px">
+                <svg width="13" height="13"><use href="#ic-plane"/></svg>
+                Ida · Mar 20 oct 2026
+              </div>
+              <div class="leg-grid" style="margin-bottom:10px">
+                <div><div class="leg-time" id="d-out-dep">06:00</div><div class="leg-airport" id="d-out-dep-apt">EZE · Ezeiza</div></div>
+                <div class="leg-center">
+                  <div class="leg-dur" id="d-out-dur">1h 59m</div>
+                  <div class="leg-line"><div class="leg-dot"></div><div class="leg-bar"></div><div class="leg-dot"></div></div>
+                </div>
+                <div class="leg-right"><div class="leg-time" id="d-out-arr">07:59</div><div class="leg-airport" id="d-out-arr-apt">MDZ · Mendoza</div></div>
+              </div>
+              <div class="leg-divider"></div>
+              <div class="leg-label-row" style="margin-bottom:8px">
+                <svg width="13" height="13" style="transform:scaleX(-1)"><use href="#ic-plane"/></svg>
+                Vuelta · Dom 25 oct 2026
+              </div>
+              <div class="leg-grid">
+                <div><div class="leg-time" id="d-in-dep">08:54</div><div class="leg-airport" id="d-in-dep-apt">MDZ · Mendoza</div></div>
+                <div class="leg-center">
+                  <div class="leg-dur" id="d-in-dur">1h 39m</div>
+                  <div class="leg-line" id="d-in-line"><div class="leg-dot"></div><div class="leg-bar"></div><div class="leg-dot"></div></div>
+                </div>
+                <div class="leg-right"><div class="leg-time" id="d-in-arr">10:33</div><div class="leg-airport" id="d-in-arr-apt">EZE · Ezeiza</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Passengers -->
+          <div class="detail-section">
+            <div class="detail-section-head">
+              <div class="detail-section-title">
+                <svg width="16" height="16"><use href="#ic-person"/></svg>
+                Pasajeros
+              </div>
+            </div>
+            <div class="detail-section-body">
+              <div class="pax-list">
+                <div class="pax-row">
+                  <div class="pax-avatar" style="background:#1B4DC8">S</div>
+                  <div><div class="pax-name-text">Sâmara de Oliveira</div><div class="pax-type-text">Adulto · Pasajero principal</div></div>
+                  <div class="pax-edit">Editar</div>
+                </div>
+                <div class="pax-row">
+                  <div class="pax-avatar" style="background:#6C63FF">M</div>
+                  <div><div class="pax-name-text">Marido</div><div class="pax-type-text">Adulto</div></div>
+                  <div class="pax-edit">Editar</div>
+                </div>
+                <div class="pax-row" style="background:#FFF8E1">
+                  <div class="pax-avatar" style="background:#FF9800">
+                    <svg width="18" height="18" style="color:white"><use href="#ic-infant"/></svg>
+                  </div>
+                  <div><div class="pax-name-text">Beba (2 años)</div><div class="pax-type-text">Lap infant · Viaja en brazos · Sin cargo</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seats -->
+          <div class="detail-section">
+            <div class="detail-section-head">
+              <div class="detail-section-title">
+                <svg width="16" height="16"><use href="#ic-seat"/></svg>
+                Selección de asientos
+              </div>
+            </div>
+            <div class="detail-section-body">
+              <div class="seat-suggestion">
+                <svg width="16" height="16"><use href="#ic-info"/></svg>
+                Sugerimos <strong style="margin:0 3px">10A y 10B</strong> — juntos, con espacio extra para la beba.
+              </div>
+              <div class="seat-map-wrap">
+                <div class="seat-letters">
+                  <div class="seat-ltr">A</div><div class="seat-ltr">B</div><div class="seat-ltr">C</div>
+                  <div class="seat-ltr-aisle"></div>
+                  <div class="seat-ltr">D</div><div class="seat-ltr">E</div><div class="seat-ltr">F</div>
+                </div>
+                <div class="seat-map" id="seat-map"></div>
+              </div>
+              <div class="seat-legend">
+                <div class="seat-legend-item"><div class="seat-legend-swatch" style="background:var(--eva-3-color-primary);border-color:var(--eva-3-color-primary)"></div>Seleccionado</div>
+                <div class="seat-legend-item"><div class="seat-legend-swatch" style="background:white;border-color:#D1D5DB"></div>Disponible</div>
+                <div class="seat-legend-item"><div class="seat-legend-swatch" style="background:#F3F4F6;border-color:#D1D5DB"></div>Ocupado</div>
+                <div class="seat-legend-item"><div class="seat-legend-swatch" style="background:#FFF8E1;border-color:#FFC107"></div>Beba en brazos</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Baggage -->
+          <div class="detail-section">
+            <div class="detail-section-head">
+              <div class="detail-section-title">
+                <svg width="16" height="16"><use href="#ic-luggage"/></svg>
+                Equipaje incluido
+              </div>
+            </div>
+            <div class="detail-section-body">
+              <div class="baggage-list" id="d-baggage-list">
+                <div class="baggage-row">
+                  <svg width="18" height="18" style="color:var(--eva-3-color-success)"><use href="#ic-backpack"/></svg>
+                  <span><span class="text-ok">Incluida</span> — Mochila de mano</span>
+                </div>
+                <div class="baggage-row" id="d-bag-checked">
+                  <svg width="18" height="18" style="color:var(--eva-3-color-success)"><use href="#ic-luggage"/></svg>
+                  <span><span class="text-ok">Incluida</span> — 1 maleta despachada hasta 23 kg</span>
+                </div>
+                <div class="baggage-row">
+                  <svg width="18" height="18" style="color:var(--eva-3-color-success)"><use href="#ic-check"/></svg>
+                  <span><span class="text-ok">Incluido</span> — Cochecito de bebé en bodega, sin cargo</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /left col -->
+
+        <!-- Right column: sidebar (desktop) -->
+        <div class="detail-sidebar">
+          <div class="price-sidebar">
+            <div class="price-sidebar-head">
+              <div class="price-sidebar-route">Buenos Aires → Mendoza</div>
+              <div class="price-sidebar-meta">20–25 oct 2026 · Ida y vuelta</div>
+            </div>
+            <div class="price-sidebar-body">
+              <div class="price-breakdown-row"><span class="price-breakdown-label">Sâmara (adulto)</span><span class="price-breakdown-value" id="sb-adult1">$ 334.953</span></div>
+              <div class="price-breakdown-row"><span class="price-breakdown-label">Marido (adulto)</span><span class="price-breakdown-value" id="sb-adult2">$ 334.953</span></div>
+              <div class="price-breakdown-row"><span class="price-breakdown-label">Beba (lap infant)</span><span class="price-breakdown-free">Sin cargo</span></div>
+              <div class="price-breakdown-row"><span class="price-breakdown-label">Impuestos y tasas</span><span class="price-breakdown-value" id="sb-taxes">$ 211.610</span></div>
+              <div class="price-breakdown-row" id="sb-discount-row" style="display:none">
+                <span class="price-breakdown-label" id="sb-discount-label">Descuento banco</span>
+                <span class="price-breakdown-discount" id="sb-discount-val">- $ 5.043</span>
+              </div>
+              <div class="price-total-row">
+                <span class="price-total-label">Total</span>
+                <span class="price-total-value" id="sb-total">$ 669.906</span>
+              </div>
+              <div class="price-inst-note" id="sb-inst-note" style="margin-top:10px">12 cuotas de $ 55.826/mes</div>
+            </div>
+            <div class="price-sidebar-cta">
+              <button class="eva-3-button eva-3-button--cta eva-3-button--full" onclick="goTo('detail','payment')">
+                Confirmar y pagar
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /detail-grid -->
+    </div><!-- /container -->
+  </div><!-- /content -->
+
+  <!-- Mobile sticky CTA -->
+  <div class="sticky-mob">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:14px">
+      <div>
+        <div style="font-size:10.5px;color:var(--eva-3-color-neutral-500)">Total · 3 pasajeros</div>
+        <div style="font-size:20px;font-weight:900;color:var(--eva-3-color-neutral-900)" id="mob-total">$ 669.906</div>
+      </div>
+      <button class="eva-3-button eva-3-button--cta" style="flex-shrink:0" onclick="goTo('detail','payment')">
+        Confirmar y pagar
+      </button>
+    </div>
+  </div>
+
+</div><!-- /screen-detail -->
+
+
+<!-- ════════════════════════════════════════════
+     SCREEN 3 — PAGO
+════════════════════════════════════════════ -->
+<div id="screen-payment" class="screen screen--hidden">
+
+  <header class="back-header">
+    <div class="container">
+      <button class="btn-back" onclick="goBack('payment','detail')">
+        <svg width="18" height="18"><use href="#ic-arrow-left"/></svg>
+      </button>
+      <div class="back-header-title">Confirmá tu compra</div>
+      <div class="step-indicator">
+        <div class="step-dot step-dot--done"><svg width="12" height="12"><use href="#ic-check"/></svg></div>
+        <div class="step-line step-line--done"></div>
+        <div class="step-dot step-dot--done"><svg width="12" height="12"><use href="#ic-check"/></svg></div>
+        <div class="step-line step-line--done"></div>
+        <div class="step-dot step-dot--active">3</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div class="container">
+      <div class="payment-grid">
+
+        <!-- Left: form -->
+        <div>
+          <!-- Order summary -->
+          <div class="order-summary-card">
+            <div class="order-sum-label">Resumen del pedido</div>
+            <div class="order-sum-route" id="pay-route">Buenos Aires ↔ Mendoza</div>
+            <div class="order-sum-meta">20–25 oct 2026 · Ida y vuelta · 3 pasajeros</div>
+            <div class="order-sum-chips">
+              <div class="order-sum-chip" id="pay-airline-chip">Flybondi · Directo</div>
+              <div class="order-sum-chip">Economy</div>
+              <div class="order-sum-chip" id="pay-bag-chip">Maleta incluida</div>
+            </div>
+          </div>
+
+          <!-- Price breakdown (mobile) -->
+          <div class="breakdown-card" id="pay-breakdown-mobile">
+            <div class="breakdown-title">Detalle de precio</div>
+            <div class="breakdown-row"><span style="color:var(--eva-3-color-neutral-700)">Sâmara (adulto)</span><span style="font-weight:700" id="pay-a1">$ 334.953</span></div>
+            <div class="breakdown-row"><span style="color:var(--eva-3-color-neutral-700)">Marido (adulto)</span><span style="font-weight:700" id="pay-a2">$ 334.953</span></div>
+            <div class="breakdown-row"><span style="color:var(--eva-3-color-neutral-700)">Beba (lap infant)</span><span class="green">Sin cargo</span></div>
+            <div class="breakdown-row"><span style="color:var(--eva-3-color-neutral-700)">Impuestos y tasas</span><span style="font-weight:700" id="pay-tax">$ 211.610</span></div>
+            <div class="breakdown-row" id="pay-disc-row" style="display:none"><span id="pay-disc-label">Descuento banco</span><span class="green" id="pay-disc-val">- $ 5.043</span></div>
+            <div class="breakdown-total-row">
+              <span class="breakdown-total-label">Total a pagar</span>
+              <span class="breakdown-total-value" id="pay-total">$ 669.906</span>
+            </div>
+            <div style="text-align:right;font-size:11.5px;color:var(--eva-3-color-primary);font-weight:600;margin-top:8px" id="pay-inst-note">12 cuotas de $ 55.826/mes con MasterCard</div>
+          </div>
+
+          <!-- Bank promo -->
+          <div class="bank-promo-card" id="pay-bank-promo">
+            <svg width="20" height="20"><use href="#ic-card"/></svg>
+            <div class="bank-promo-text" id="pay-bank-text">
+              Pagá con <strong>Galicia MasterCard</strong> y accedé a hasta <strong>12 cuotas sin interés</strong> en vuelos nacionales.
+            </div>
+          </div>
+
+          <!-- Payment form -->
+          <div class="pay-form-card">
+            <div class="form-section-title">
+              <svg width="17" height="17"><use href="#ic-card"/></svg>
+              Datos de tu tarjeta
+            </div>
+
+            <label class="eva-3-label">Número de tarjeta</label>
+            <div class="card-input-wrap">
+              <input class="eva-3-input" type="text" placeholder="0000  0000  0000  0000" maxlength="19" oninput="fmtCard(this)" style="font-family:monospace"/>
+              <div class="card-brands">
+                <div class="card-brand brand-mc">MC</div>
+                <div class="card-brand brand-visa">VISA</div>
+              </div>
+            </div>
+
+            <label class="eva-3-label">Nombre en la tarjeta</label>
+            <input class="eva-3-input" type="text" placeholder="Como figura en la tarjeta"/>
+
+            <div class="form-row">
+              <div>
+                <label class="eva-3-label">Vencimiento</label>
+                <input class="eva-3-input" type="text" placeholder="MM/AA" maxlength="5" oninput="fmtExpiry(this)"/>
+              </div>
+              <div>
+                <label class="eva-3-label">CVV</label>
+                <input class="eva-3-input" type="text" placeholder="···" maxlength="4" style="font-family:monospace;letter-spacing:3px"/>
+              </div>
+            </div>
+
+            <label class="eva-3-label">Cuotas</label>
+            <select class="eva-3-input" style="cursor:pointer;appearance:auto" id="pay-cuotas">
+              <option value="1">1 cuota — $ 669.906</option>
+              <option value="3">3 cuotas — $ 223.302/mes</option>
+              <option value="6">6 cuotas — $ 111.651/mes</option>
+              <option value="12" selected>12 cuotas — $ 55.826/mes</option>
+            </select>
+          </div>
+        </div><!-- /left form -->
+
+        <!-- Right: confirm box -->
+        <div class="payment-summary-col">
+          <div class="confirm-box">
+            <div class="confirm-box-head">
+              <div class="confirm-box-total-label">Total a pagar</div>
+              <div class="confirm-box-total" id="cb-total">$ 669.906</div>
+              <div class="confirm-box-inst" id="cb-inst">12 cuotas de $ 55.826/mes con MasterCard</div>
+            </div>
+            <div class="confirm-box-body">
+              <div style="font-size:12.5px;color:var(--eva-3-color-neutral-700);line-height:1.55">
+                <div style="display:flex;gap:6px;margin-bottom:6px">
+                  <svg width="15" height="15" style="color:var(--eva-3-color-success);flex-shrink:0;margin-top:1px"><use href="#ic-check"/></svg>
+                  Confirmás ida y vuelta el 20–25 oct
+                </div>
+                <div style="display:flex;gap:6px;margin-bottom:6px">
+                  <svg width="15" height="15" style="color:var(--eva-3-color-success);flex-shrink:0;margin-top:1px"><use href="#ic-check"/></svg>
+                  3 pasajeros: Sâmara, Marido, Beba
+                </div>
+                <div style="display:flex;gap:6px">
+                  <svg width="15" height="15" style="color:var(--eva-3-color-success);flex-shrink:0;margin-top:1px"><use href="#ic-check"/></svg>
+                  Asientos 10A y 10B seleccionados
+                </div>
+              </div>
+
+              <button class="eva-3-button eva-3-button--cta eva-3-button--full" style="margin-top:4px" onclick="confirmPurchase()">
+                Confirmar compra
+              </button>
+
+              <div class="confirm-secure">
+                <svg width="13" height="13"><use href="#ic-lock"/></svg>
+                Pago seguro con cifrado SSL 256-bit
+              </div>
+
+              <div style="font-size:11px;color:#9CA3AF;text-align:center;line-height:1.5">
+                Al confirmar aceptás los <u style="cursor:pointer">Términos y Condiciones</u> de Despegar
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /payment-grid -->
+    </div>
+  </div>
+
+  <!-- Mobile: sticky CTA -->
+  <div class="sticky-mob">
+    <button class="eva-3-button eva-3-button--cta eva-3-button--full" onclick="confirmPurchase()">
+      Confirmar compra · $ <span id="mob-pay-total">669.906</span>
+    </button>
+    <div class="confirm-secure" style="margin-top:8px">
+      <svg width="13" height="13"><use href="#ic-lock"/></svg>
+      Pago seguro · SSL 256-bit
+    </div>
+  </div>
+
+</div><!-- /screen-payment -->
+
+
+<!-- ════════════════════════════════════════════
+     SUCCESS MODAL
+════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-success">
+  <div class="modal">
+    <div class="modal-icon">🎉</div>
+    <div class="modal-title">¡Compra confirmada!</div>
+    <div class="modal-sub">
+      Tu vuelo a <strong>Mendoza</strong> está reservado.<br>
+      Te enviamos el itinerario a<br><strong>samara.deoliveira@despegar.com</strong>
+    </div>
+    <div class="modal-code">Localizador: MDZ-26-CHAL42</div>
+    <button class="eva-3-button eva-3-button--primary" style="width:100%;margin-top:20px;border-radius:12px;padding:14px;font-size:15px" onclick="document.getElementById('modal-success').classList.remove('open')">
+      Ver mi reserva
+    </button>
+  </div>
+</div>
+
+
+<script>
+  /* ── Flight data (del flights.json + LATAM estimado) ── */
+  const flights = {
+    flybondi1: {
+      name: 'Flybondi', code: 'JA3072 / JA3071',
+      outDep:'06:00', outDepApt:'EZE · Ezeiza', outArr:'07:59', outArrApt:'MDZ · Mendoza', outDur:'1h 59m', outDirect:true,
+      inDep:'08:54',  inDepApt:'MDZ · Mendoza',  inArr:'10:33', inArrApt:'EZE · Ezeiza',  inDur:'1h 39m',  inDirect:true,
+      bagChecked:true, adult:'334.953', taxes:'211.610', price:'669.906',
+      hasDiscount:false, inst:'12 cuotas de $ 55.826/mes con MasterCard',
+      chipLabel:'Flybondi · Directo', bagChip:'Maleta incluida'
+    },
+    latam: {
+      name: 'LATAM Argentina', code: 'LA1502 / LA1503',
+      outDep:'08:15', outDepApt:'AEP · Aeroparque', outArr:'10:20', outArrApt:'MDZ · Mendoza', outDur:'2h 05m', outDirect:true,
+      inDep:'13:40',  inDepApt:'MDZ · Mendoza',     inArr:'15:45', inArrApt:'AEP · Aeroparque', inDur:'2h 05m', inDirect:true,
+      bagChecked:true, adult:'294.900', taxes:'189.600', price:'589.800',
+      hasDiscount:false, inst:'12 cuotas de $ 49.150/mes con MasterCard',
+      chipLabel:'LATAM · Directo', bagChip:'Maleta incluida'
+    },
+    aerolineas: {
+      name: 'Aerolíneas Argentinas', code: 'AR1416 / AR1569·AR1525',
+      outDep:'14:20', outDepApt:'EZE · Ezeiza ⚠', outArr:'16:20', outArrApt:'MDZ · Mendoza', outDur:'2h 00m', outDirect:true,
+      inDep:'10:40',  inDepApt:'MDZ · Mendoza',    inArr:'17:10', inArrApt:'AEP · Aeroparque ⚠', inDur:'6h 30m', inDirect:false,
+      bagChecked:false, adult:'252.174', taxes:'222.722', price:'499.304',
+      hasDiscount:true, discountLabel:'Descuento Galicia MasterCard', discountVal:'- $ 5.043',
+      inst:'6 cuotas de $ 83.217/mes con Galicia MasterCard',
+      chipLabel:'Aerolíneas · 1 escala', bagChip:'Sin maleta despachada'
+    }
+  };
+
+  /* ── Navigation ── */
+  function goTo(from, to) {
+    const fEl = document.getElementById(`screen-${from}`);
+    const tEl = document.getElementById(`screen-${to}`);
+    tEl.style.transition = 'none';
+    tEl.classList.remove('screen--hidden');
+    tEl.style.transform = 'translateX(100%)';
+    tEl.scrollTop = 0;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      fEl.style.transition = 'transform 0.34s cubic-bezier(0.4,0,0.2,1)';
+      tEl.style.transition  = 'transform 0.34s cubic-bezier(0.4,0,0.2,1)';
+      fEl.style.transform = 'translateX(-28%)';
+      tEl.style.transform = 'translateX(0)';
+    }));
+    setTimeout(() => fEl.classList.add('screen--hidden'), 340);
+  }
+
+  function goBack(from, to) {
+    const fEl = document.getElementById(`screen-${from}`);
+    const tEl = document.getElementById(`screen-${to}`);
+    tEl.style.transition = 'none';
+    tEl.classList.remove('screen--hidden');
+    tEl.style.transform = 'translateX(-28%)';
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      fEl.style.transition = 'transform 0.34s cubic-bezier(0.4,0,0.2,1)';
+      tEl.style.transition  = 'transform 0.34s cubic-bezier(0.4,0,0.2,1)';
+      fEl.style.transform = 'translateX(100%)';
+      tEl.style.transform = 'translateX(0)';
+    }));
+    setTimeout(() => fEl.classList.add('screen--hidden'), 340);
+  }
+
+  /* ── Select flight ── */
+  function selectFlight(id) {
+    const f = flights[id];
+    // Detail screen
+    document.getElementById('d-airline-name').textContent = f.name;
+    document.getElementById('d-out-dep').textContent  = f.outDep;
+    document.getElementById('d-out-dep-apt').textContent = f.outDepApt;
+    document.getElementById('d-out-arr').textContent  = f.outArr;
+    document.getElementById('d-out-arr-apt').textContent = f.outArrApt;
+    document.getElementById('d-out-dur').textContent  = f.outDur;
+    document.getElementById('d-in-dep').textContent   = f.inDep;
+    document.getElementById('d-in-dep-apt').textContent = f.inDepApt;
+    document.getElementById('d-in-arr').textContent   = f.inArr;
+    document.getElementById('d-in-arr-apt').textContent = f.inArrApt;
+    document.getElementById('d-in-dur').textContent   = f.inDur;
+    const badge = document.getElementById('d-direct-badge');
+    badge.className = f.inDirect ? 'eva-3-badge eva-3-badge--direct' : 'eva-3-badge eva-3-badge--stop';
+    badge.textContent = f.inDirect ? 'Directo ambos tramos' : '1 escala en vuelta';
+    const bagEl = document.getElementById('d-bag-checked');
+    bagEl.innerHTML = f.bagChecked
+      ? `<svg width="18" height="18" style="color:var(--eva-3-color-success)"><use href="#ic-luggage"/></svg><span><span class="text-ok">Incluida</span> — 1 maleta despachada hasta 23 kg</span>`
+      : `<svg width="18" height="18" style="color:var(--eva-3-color-neutral-500)"><use href="#ic-luggage"/></svg><span><span class="text-muted">Sin maleta despachada</span> (podés agregar)</span>`;
+    // Sidebar
+    document.getElementById('sb-adult1').textContent = `$ ${f.adult}`;
+    document.getElementById('sb-adult2').textContent = `$ ${f.adult}`;
+    document.getElementById('sb-taxes').textContent  = `$ ${f.taxes}`;
+    document.getElementById('sb-total').textContent  = `$ ${f.price}`;
+    document.getElementById('sb-inst-note').textContent = f.inst;
+    document.getElementById('mob-total').textContent = `$ ${f.price}`;
+    const sbDisc = document.getElementById('sb-discount-row');
+    if (f.hasDiscount) {
+      sbDisc.style.display = 'flex';
+      document.getElementById('sb-discount-label').textContent = f.discountLabel;
+      document.getElementById('sb-discount-val').textContent   = f.discountVal;
+    } else { sbDisc.style.display = 'none'; }
+    // Payment
+    document.getElementById('pay-airline-chip').textContent = f.chipLabel;
+    document.getElementById('pay-bag-chip').textContent = f.bagChip;
+    document.getElementById('pay-a1').textContent = `$ ${f.adult}`;
+    document.getElementById('pay-a2').textContent = `$ ${f.adult}`;
+    document.getElementById('pay-tax').textContent = `$ ${f.taxes}`;
+    document.getElementById('pay-total').textContent = `$ ${f.price}`;
+    document.getElementById('pay-inst-note').textContent = f.inst;
+    document.getElementById('cb-total').textContent = `$ ${f.price}`;
+    document.getElementById('cb-inst').textContent = f.inst;
+    document.getElementById('mob-pay-total').textContent = f.price;
+    const pdDisc = document.getElementById('pay-disc-row');
+    if (f.hasDiscount) {
+      pdDisc.style.display = 'flex';
+      document.getElementById('pay-disc-label').textContent = f.discountLabel;
+      document.getElementById('pay-disc-val').textContent   = f.discountVal;
+    } else { pdDisc.style.display = 'none'; }
+    goTo('results', 'detail');
+  }
+
+  /* ── Seat map ── */
+  const occupied = new Set(['1A','1C','2B','2E','3A','3F','4D','5C','6B','6E','7A','8D','9C','11E','12A','13F','14B','15D']);
+  const selected = new Set(['10A','10B']);
+  const infantSeat = '10C';
+
+  function buildSeats() {
+    const map = document.getElementById('seat-map');
+    map.innerHTML = '';
+    for (let r = 1; r <= 15; r++) {
+      const row = document.createElement('div');
+      row.className = 'seat-row-wrap';
+      row.innerHTML = `<div class="seat-row-num">${r}</div>`;
+      for (const col of ['A','B','C','_','D','E','F']) {
+        if (col === '_') { row.innerHTML += `<div class="seat-aisle"></div>`; continue; }
+        const id = `${r}${col}`;
+        const s = document.createElement('div');
+        s.className = 'seat';
+        if (id === infantSeat) { s.classList.add('seat--infant'); s.innerHTML = `<svg width="12" height="12"><use href="#ic-infant"/></svg>`; }
+        else if (occupied.has(id)) { s.classList.add('seat--occ'); }
+        else if (selected.has(id)) {
+          s.classList.add('seat--sel');
+          s.textContent = id === '10A' ? 'S' : 'M';
+        } else {
+          s.addEventListener('click', () => {
+            if (selected.size >= 2 && !selected.has(id)) return;
+            if (selected.has(id)) { selected.delete(id); s.classList.remove('seat--sel'); s.textContent=''; }
+            else { selected.add(id); s.classList.add('seat--sel'); s.textContent = selected.size===1?'S':'M'; }
+          });
+        }
+        row.appendChild(s);
+      }
+      map.appendChild(row);
+    }
+  }
+
+  /* ── Form formatters ── */
+  function fmtCard(el) { let v=el.value.replace(/\D/g,'').slice(0,16); el.value=v.replace(/(.{4})/g,'$1 ').trim(); }
+  function fmtExpiry(el) { let v=el.value.replace(/\D/g,''); if(v.length>2) v=v.slice(0,2)+'/'+v.slice(2,4); el.value=v; }
+
+  /* ── Confirm ── */
+  function confirmPurchase() { document.getElementById('modal-success').classList.add('open'); }
+
+  /* ── Init ── */
+  buildSeats();
+</script>
+
+</body>
+</html>
