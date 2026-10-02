@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resultados de vuelos — HotelDO</title>
+  <!-- EVA UI css resources start -->
+  <link rel="stylesheet" href="https://www.staticontent.com/eva-core/static/eva/eva-core.min.css">
+  <link rel="stylesheet" href="https://www.staticontent.com/eva-core/static/eva/eva.min.css">
+  <!-- EVA UI css resources end -->
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand-primary: #4300D2;
+      --brand-accent: #6832DB;
+      --neutral-800: #323439;
+      --neutral-700: #565A60;
+      --neutral-600: #72777F;
+      --neutral-400: #C0C4CC;
+      --neutral-300: #DDE1E8;
+      --neutral-100: #F2F4F5;
+      --white: #FFFFFF;
+      --active-indicator: #F6AEA7;
+      --font: 'Rubik', sans-serif;
+    }
+
+    body { font-family: var(--font); background: var(--neutral-100); color: var(--neutral-800); min-height: 100vh; }
+
+    /* ── HEADER ─────────────────────────────────────────── */
+    header {
+      background: var(--neutral-800); height: 72px;
+      display: flex; align-items: center; justify-content: space-between; padding: 0 64px;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 32px; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+
+    .brand-symbol {
+      width: 32px; height: 32px; background: var(--brand-primary); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 17px; font-weight: 700;
+    }
+
+    .brand-name { color: white; font-size: 21px; font-weight: 600; }
+
+    .brand-badge {
+      background: var(--brand-accent); color: white;
+      font-size: 10px; font-weight: 600; padding: 3px 7px; border-radius: 99px;
+    }
+
+    nav { display: flex; align-items: center; gap: 24px; }
+
+    .nav-link { color: white; font-size: 14px; text-decoration: none; opacity: 0.85; }
+
+    .nav-link.active {
+      font-weight: 500; opacity: 1;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+
+    .nav-link.active::after {
+      content: ''; display: block; width: 44px; height: 3px;
+      background: var(--active-indicator); border-radius: 3px;
+    }
+
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .agency-context { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+    .agency-name { color: white; font-size: 12px; font-weight: 500; }
+    .agency-area { color: var(--neutral-400); font-size: 11px; }
+    .avatar { width: 34px; height: 34px; border-radius: 50%; background: #7A7F8A; }
+
+    /* ── SEARCH SUMMARY ──────────────────────────────────── */
+    .search-summary {
+      background: var(--white); border-bottom: 1px solid var(--neutral-300);
+      padding: 24px 64px; display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .route-info h1 { font-size: 28px; font-weight: 500; color: var(--neutral-800); }
+    .route-info .airports { font-size: 14px; color: var(--neutral-600); margin-top: 2px; }
+
+    .search-params { display: flex; gap: 32px; align-items: flex-start; }
+
+    .param-item { display: flex; flex-direction: column; gap: 2px; }
+    .param-item .param-label { font-size: 12px; color: var(--neutral-600); }
+    .param-item .param-value { font-size: 14px; font-weight: 500; color: var(--neutral-800); }
+
+    .edit-search { color: var(--brand-primary); font-size: 14px; font-weight: 500; text-decoration: none; }
+
+    /* ── MAIN ────────────────────────────────────────────── */
+    main { padding: 32px 64px 64px; }
+
+    .list-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
+
+    .accent-bar { width: 4px; height: 16px; background: var(--brand-primary); border-radius: 2px; }
+
+    .section-label { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .section-label span { font-size: 14px; font-weight: 500; color: var(--neutral-700); letter-spacing: 0.5px; }
+
+    .list-title-block h2 { font-size: 36px; font-weight: 500; color: var(--neutral-800); line-height: 44px; }
+    .list-title-block .list-subtitle { font-size: 14px; color: var(--neutral-600); margin-top: 4px; }
+
+    .sort-select {
+      border: 1px solid var(--neutral-300); border-radius: 8px;
+      padding: 12px 16px; display: flex; align-items: center; gap: 16px;
+      min-width: 280px; cursor: pointer;
+    }
+
+    .sort-select .sort-label { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+    .sort-select .sort-label small { font-size: 12px; color: var(--neutral-600); }
+    .sort-select .sort-label span { font-size: 14px; font-weight: 500; color: var(--neutral-800); }
+
+    /* Filters */
+    .filters-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .filter-label { font-size: 14px; color: var(--neutral-700); }
+
+    .filter-chip {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border: 1px solid var(--neutral-300); border-radius: 99px;
+      font-size: 14px; color: var(--neutral-800); cursor: pointer;
+      background: var(--white); font-family: var(--font);
+    }
+
+    .clear-filters { margin-left: auto; color: var(--brand-primary); font-size: 14px; text-decoration: none; }
+
+    /* ── FLIGHT CARD ─────────────────────────────────────── */
+    .flight-card {
+      background: var(--white); border-radius: 12px; padding: 24px;
+      display: flex; margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(84,89,98,0.07);
+    }
+
+    /* Itinerary column */
+    .col-itinerary { width: 390px; flex-shrink: 0; padding-right: 24px; }
+
+    .airline-row { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+
+    .airline-logo {
+      width: 40px; height: 40px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: white; flex-shrink: 0;
+    }
+
+    .logo-jetsmart { background: #E8440E; }
+    .logo-aerolineas { background: #0099D4; }
+
+    .airline-info .airline-name { font-size: 18px; font-weight: 500; color: var(--neutral-800); }
+    .airline-info .airline-code { font-size: 12px; color: var(--neutral-600); }
+
+    .leg { margin-top: 16px; }
+    .leg + .leg { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--neutral-300); }
+
+    .leg-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+
+    .leg-type { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--neutral-700); }
+    .leg-type i { color: var(--neutral-600); }
+
+    .stops-badge { font-size: 12px; color: var(--neutral-600); }
+
+    .stops-badge.with-stop {
+      display: flex; align-items: center; gap: 4px;
+      background: #FFF0E0; color: #B45309;
+      border: 1px solid #F59E0B; border-radius: 99px;
+      padding: 2px 10px; font-weight: 500; font-size: 12px;
+    }
+
+    .leg-times { display: flex; align-items: center; }
+
+    .time-block { flex-shrink: 0; }
+    .time-block .hour { font-size: 22px; font-weight: 500; color: var(--neutral-800); }
+    .time-block .airport-code { font-size: 12px; color: var(--neutral-600); }
+
+    .flight-line { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 12px; }
+    .flight-duration { font-size: 12px; color: var(--neutral-600); }
+
+    .flight-track { width: 100%; display: flex; align-items: center; gap: 4px; }
+    .track-line { flex: 1; height: 1px; background: var(--neutral-400); }
+    .flight-track i { color: var(--neutral-600); }
+
+    /* Separator */
+    .col-separator { width: 1px; background: var(--neutral-300); margin: 0 24px; flex-shrink: 0; }
+
+    /* Conditions column */
+    .col-conditions { flex: 1; padding-right: 24px; }
+    .cond-section { margin-bottom: 18px; }
+    .cond-section:last-child { margin-bottom: 0; }
+
+    .cond-title { font-size: 14px; font-weight: 500; color: var(--neutral-800); margin-bottom: 6px; }
+
+    .route-codes { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+    .route-text { font-size: 14px; font-weight: 500; color: var(--neutral-800); }
+
+    .diff-airport-badge {
+      display: flex; align-items: center; gap: 4px;
+      background: #FFF3E0; border: 1px solid #FFB74D;
+      color: #B45309; font-size: 12px; font-weight: 500;
+      padding: 2px 8px; border-radius: 99px;
+    }
+
+    .route-note { font-size: 13px; color: var(--neutral-600); margin-top: 2px; }
+
+    .warning-alert {
+      background: #FFF8E1; border-radius: 6px; padding: 8px 12px;
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 13px; color: #7A5000; margin-top: 8px;
+    }
+
+    .warning-alert i { color: #F59E0B; flex-shrink: 0; margin-top: 1px; }
+
+    .baggage-row { display: flex; align-items: center; gap: 10px; }
+    .baggage-row i { color: var(--neutral-700); }
+
+    .baggage-info .baggage-label { font-size: 12px; color: var(--neutral-600); }
+    .baggage-info .baggage-value { font-size: 14px; font-weight: 500; color: var(--neutral-800); }
+
+    .stay-row { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--neutral-700); }
+    .stay-row i { color: var(--neutral-600); }
+
+    .loyalty-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--neutral-700); }
+    .loyalty-row i { color: #F59E0B; }
+
+    /* Price column */
+    .col-price { width: 286px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: space-between; }
+
+    .price-block { text-align: right; }
+    .price-scope { font-size: 12px; color: var(--neutral-600); margin-bottom: 4px; }
+    .price-total { font-size: 26px; font-weight: 600; color: var(--neutral-800); }
+    .price-per-adult { font-size: 12px; color: var(--neutral-600); margin-top: 4px; }
+    .price-taxes { font-size: 11px; color: var(--neutral-600); }
+
+    .bank-promo {
+      display: flex; align-items: center; justify-content: flex-end; gap: 6px;
+      background: #E8F5E9; border-radius: 99px; padding: 4px 10px; margin-top: 8px;
+    }
+
+    .bank-promo i { color: #1B5E20; }
+    .bank-promo span { font-size: 12px; color: #1B5E20; font-weight: 500; }
+
+    .financing-block { display: flex; flex-direction: column; gap: 10px; }
+    .installments { font-size: 14px; color: var(--neutral-700); text-align: right; line-height: 20px; }
+
+    /* ── TIPS STRIP ──────────────────────────────────────── */
+    .tips-strip { background: var(--white); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+
+    .tips-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .tips-header .tips-title { font-size: 12px; color: var(--neutral-600); text-transform: uppercase; letter-spacing: 0.5px; }
+    .tips-header .tips-scroll { font-size: 12px; color: var(--neutral-600); }
+
+    .tips-carousel { display: flex; gap: 10px; overflow-x: auto; }
+
+    .tip-pill {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; border: 1px solid var(--neutral-300); border-radius: 99px;
+      font-size: 14px; color: var(--neutral-800); white-space: nowrap;
+      cursor: pointer; background: var(--neutral-100);
+    }
+
+    .tip-pill i { color: var(--neutral-700); }
+
+    /* ── FOOTER ──────────────────────────────────────────── */
+    footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; margin-top: 8px; border-top: 1px solid var(--neutral-300);
+    }
+
+    .footer-coverage { font-size: 13px; color: var(--neutral-600); }
+
+    .footer-support { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--brand-primary); text-decoration: none; }
+    .footer-support i { color: var(--brand-primary); }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <div class="brand">
+        <div class="brand-symbol">H</div>
+        <span class="brand-name">HotelDO</span>
+        <span class="brand-badge">B2B</span>
+      </div>
+      <nav>
+        <a href="#" class="nav-link">Inicio</a>
+        <a href="#" class="nav-link active">Vuelos</a>
+        <a href="#" class="nav-link">Hoteles</a>
+        <a href="#" class="nav-link">Reservas</a>
+      </nav>
+    </div>
+    <div class="header-right">
+      <div class="agency-context">
+        <span class="agency-name">Viajes Central</span>
+        <span class="agency-area">Resultados de vuelos</span>
+      </div>
+      <div class="avatar"></div>
+      <i class="eva-3-icon-chevron-down -eva-3-icon-xsm" style="color:#C0C4CC;"></i>
+    </div>
+  </header>
+
+  <!-- SEARCH SUMMARY -->
+  <div class="search-summary">
+    <div class="route-info">
+      <h1>Buenos Aires → Mendoza</h1>
+      <p class="airports">EZE / AEP → MDZ</p>
+    </div>
+    <div class="search-params">
+      <div class="param-item">
+        <span class="param-label">Fechas</span>
+        <span class="param-value">20–25 oct 2026 · 5 noches</span>
+      </div>
+      <div class="param-item">
+        <span class="param-label">Viajeros</span>
+        <span class="param-value">2 adultos</span>
+      </div>
+      <div class="param-item">
+        <span class="param-label">Moneda</span>
+        <span class="param-value">ARS</span>
+      </div>
+    </div>
+    <a href="buscador.html" class="edit-search">Editar y volver a buscar</a>
+  </div>
+
+  <!-- MAIN -->
+  <main>
+
+    <div class="list-header">
+      <div class="list-title-block">
+        <div class="section-label">
+          <div class="accent-bar"></div>
+          <span>OPCIONES DISPONIBLES</span>
+        </div>
+        <h2>3 vuelos encontrados</h2>
+        <p class="list-subtitle">Precios finales para 2 adultos · Actualizado hace 1 min</p>
+      </div>
+      <div class="sort-select">
+        <div class="sort-label">
+          <small>Ordenar por</small>
+          <span>Precio total</span>
+        </div>
+        <i class="eva-3-icon-chevron-down -eva-3-icon-xsm" style="color:#72777F;"></i>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-bar">
+      <span class="filter-label">Filtrar por</span>
+      <button class="filter-chip">Precio <i class="eva-3-icon-chevron-down -eva-3-icon-xsm"></i></button>
+      <button class="filter-chip">Horario <i class="eva-3-icon-chevron-down -eva-3-icon-xsm"></i></button>
+      <button class="filter-chip">Duración <i class="eva-3-icon-chevron-down -eva-3-icon-xsm"></i></button>
+      <button class="filter-chip">Aerolínea <i class="eva-3-icon-chevron-down -eva-3-icon-xsm"></i></button>
+      <button class="filter-chip">Escalas <i class="eva-3-icon-chevron-down -eva-3-icon-xsm"></i></button>
+      <a href="#" class="clear-filters">Limpiar filtros</a>
+    </div>
+
+    <!-- ── CARD 1: JetSMART ───────────────────────────────── -->
+    <div class="flight-card">
+      <div class="col-itinerary">
+        <div class="airline-row">
+          <div class="airline-logo logo-jetsmart">JS</div>
+          <div class="airline-info">
+            <div class="airline-name">JetSMART</div>
+            <div class="airline-code">Código 0J · Tarifa agencia</div>
+          </div>
+        </div>
+
+        <div class="leg">
+          <div class="leg-header">
+            <div class="leg-type">
+              <i class="eva-3-icon-airplane-going -eva-3-icon-sm"></i>
+              Ida
+            </div>
+            <span class="stops-badge">Directo</span>
+          </div>
+          <div class="leg-times">
+            <div class="time-block">
+              <div class="hour">06:00</div>
+              <div class="airport-code">EZE</div>
+            </div>
+            <div class="flight-line">
+              <span class="flight-duration">01:59</span>
+              <div class="flight-track">
+                <div class="track-line"></div>
+                <i class="eva-3-icon-airplane-going -eva-3-icon-xsm"></i>
+              </div>
+            </div>
+            <div class="time-block" style="text-align:right;">
+              <div class="hour">07:59</div>
+              <div class="airport-code">MDZ</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="leg">
+          <div class="leg-header">
+            <div class="leg-type">
+              <i class="eva-3-icon-airplane-return -eva-3-icon-sm"></i>
+              Vuelta
+            </div>
+            <span class="stops-badge">Directo</span>
+          </div>
+          <div class="leg-times">
+            <div class="time-block">
+              <div class="hour">08:54</div>
+              <div class="airport-code">MDZ</div>
+            </div>
+            <div class="flight-line">
+              <span class="flight-duration">01:39</span>
+              <div class="flight-track">
+                <div class="track-line"></div>
+                <i class="eva-3-icon-airplane-going -eva-3-icon-xsm"></i>
+              </div>
+            </div>
+            <div class="time-block" style="text-align:right;">
+              <div class="hour">10:33</div>
+              <div class="airport-code">EZE</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-separator"></div>
+
+      <div class="col-conditions">
+        <div class="cond-section">
+          <div class="cond-title">Aeropuertos del itinerario</div>
+          <div class="route-codes"><span class="route-text">EZE → MDZ → MDZ → EZE</span></div>
+          <div class="route-note">Salida y regreso por Ezeiza según la búsqueda.</div>
+        </div>
+        <div class="cond-section">
+          <div class="baggage-row">
+            <i class="eva-3-icon-suitcase -eva-3-icon-md"></i>
+            <div class="baggage-info">
+              <div class="baggage-label">Equipaje por adulto</div>
+              <div class="baggage-value">1 valija 23kg incluida</div>
+            </div>
+          </div>
+        </div>
+        <div class="cond-section">
+          <div class="stay-row">
+            <i class="eva-3-icon-calendar -eva-3-icon-sm"></i>
+            <span>Disfrutá 5 días en Mendoza</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-separator"></div>
+
+      <div class="col-price">
+        <div class="price-block">
+          <div class="price-scope">Precio total · 2 personas</div>
+          <div class="price-total">$669.906</div>
+          <div class="price-per-adult">$334.953 por adulto</div>
+          <div class="price-taxes">Impuestos y tasas incluidos</div>
+        </div>
+        <div class="financing-block">
+          <div class="installments">12 cuotas</div>
+          <button class="eva-3-btn -lg -primary" style="width:100%;">
+            <em class="btn-text">Seleccionar</em>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TIPS STRIP ─────────────────────────────────────── -->
+    <div class="tips-strip">
+      <div class="tips-header">
+        <span class="tips-title">TRAVEL_SAGE_TIPS</span>
+        <span class="tips-scroll">Deslizá para ver más</span>
+      </div>
+      <div class="tips-carousel">
+        <div class="tip-pill"><i class="eva-3-icon-mail -eva-3-icon-xsm"></i> SOFIA · búsqueda asistida</div>
+        <div class="tip-pill"><i class="eva-3-icon-trend-up -eva-3-icon-xsm"></i> Tendencia de precios</div>
+        <div class="tip-pill"><i class="eva-3-icon-card -eva-3-icon-xsm"></i> Promos bancarias</div>
+        <div class="tip-pill"><i class="eva-3-icon-partly-cloudy -eva-3-icon-xsm"></i> Clima en Mendoza</div>
+        <div class="tip-pill"><i class="eva-3-icon-location -eva-3-icon-xsm"></i> Qué conocer en Mendoza</div>
+      </div>
+    </div>
+
+    <!-- ── CARD 2: Aerolíneas Argentinas ─────────────────── -->
+    <div class="flight-card">
+      <div class="col-itinerary">
+        <div class="airline-row">
+          <div class="airline-logo logo-aerolineas">AR</div>
+          <div class="airline-info">
+            <div class="airline-name">Aerolíneas Argentinas</div>
+            <div class="airline-code">Código AR · Tarifa agencia</div>
+          </div>
+        </div>
+
+        <div class="leg">
+          <div class="leg-header">
+            <div class="leg-type">
+              <i class="eva-3-icon-airplane-going -eva-3-icon-sm"></i>
+              Ida
+            </div>
+            <span class="stops-badge">Directo</span>
+          </div>
+          <div class="leg-times">
+            <div class="time-block">
+              <div class="hour">14:20</div>
+              <div class="airport-code">EZE</div>
+            </div>
+            <div class="flight-line">
+              <span class="flight-duration">02:00</span>
+              <div class="flight-track">
+                <div class="track-line"></div>
+                <i class="eva-3-icon-airplane-going -eva-3-icon-xsm"></i>
+              </div>
+            </div>
+            <div class="time-block" style="text-align:right;">
+              <div class="hour">16:20</div>
+              <div class="airport-code">MDZ</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="leg">
+          <div class="leg-header">
+            <div class="leg-type">
+              <i class="eva-3-icon-airplane-return -eva-3-icon-sm"></i>
+              Vuelta
+            </div>
+            <span class="stops-badge with-stop">
+              <i class="eva-3-icon-cross -eva-3-icon-xsm"></i> Con escala
+            </span>
+          </div>
+          <div class="leg-times">
+            <div class="time-block">
+              <div class="hour">10:40</div>
+              <div class="airport-code">MDZ</div>
+            </div>
+            <div class="flight-line">
+              <span class="flight-duration">06:30</span>
+              <div class="flight-track">
+                <div class="track-line"></div>
+                <i class="eva-3-icon-airplane-going -eva-3-icon-xsm"></i>
+              </div>
+            </div>
+            <div class="time-block" style="text-align:right;">
+              <div class="hour">17:10</div>
+              <div class="airport-code">AEP</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-separator"></div>
+
+      <div class="col-conditions">
+        <div class="cond-section">
+          <div class="cond-title">Aeropuertos del itinerario</div>
+          <div class="route-codes">
+            <span class="route-text">EZE → MDZ → MDZ → AEP</span>
+            <span class="diff-airport-badge">
+              <i class="eva-3-icon-cross -eva-3-icon-xsm"></i> Aeropuerto distinto
+            </span>
+          </div>
+          <div class="warning-alert">
+            <i class="eva-3-icon-warning-filled -eva-3-icon-sm"></i>
+            AEP · Regreso a Aeroparque. Confirmá con el pasajero.
+          </div>
+        </div>
+        <div class="cond-section">
+          <div class="baggage-row">
+            <i class="eva-3-icon-suitcase -eva-3-icon-md"></i>
+            <div class="baggage-info">
+              <div class="baggage-label">Equipaje por adulto</div>
+              <div class="baggage-value">Sin valija incluida</div>
+            </div>
+          </div>
+        </div>
+        <div class="cond-section">
+          <div class="stay-row">
+            <i class="eva-3-icon-calendar -eva-3-icon-sm"></i>
+            <span>Disfrutá 4 días en Mendoza</span>
+          </div>
+        </div>
+        <div class="cond-section">
+          <div class="loyalty-row">
+            <i class="eva-3-icon-loyalty -eva-3-icon-sm"></i>
+            <span>Acumulá millas Aerolíneas Plus</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-separator"></div>
+
+      <div class="col-price">
+        <div class="price-block">
+          <div class="price-scope">Precio total · 2 personas</div>
+          <div class="price-total">$499.304</div>
+          <div class="price-per-adult">$249.652 por adulto</div>
+          <div class="price-taxes">Impuestos y tasas incluidos</div>
+          <div class="bank-promo">
+            <i class="eva-3-icon-card -eva-3-icon-xsm"></i>
+            <span>Galicia MasterCard</span>
+          </div>
+        </div>
+        <div class="financing-block">
+          <div class="installments">12 cuotas con descuento Galicia MasterCard</div>
+          <button class="eva-3-btn -lg -outline" style="width:100%;">
+            <em class="btn-text">Ver detalle</em>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CARD 3: JetSMART ───────────────────────────────── -->
+    <div class="flight-card">
+      <div class="col-itinerary">
+        <div class="airline-row">
+          <div class="airline-logo logo-jetsmart">JS</div>
+          <div class="airline-info">
+            <div class="airline-name">JetSMART</div>
+            <div class="airline-code">Código 0J · Tarifa agencia</div>
+          </div>
+        </div>
+
+        <div class="leg">
+          <div class="leg-header">
+            <div class="leg-type">
+              <i class="eva-3-icon-airplane-going -eva-3-icon-sm"></i>
+              Ida
+            </div>
+            <span class="stops-badge">Directo</span>
+          </div>
+          <div class="leg-times">
+            <div class="time-block">
+              <div class="hour">12:25</div>
+              <div class="airport-code">AEP</div>
+            </div>
+            <div class="flight-line">
+              <span class="flight-duration">01:59</span>
+              <div class="flight-track">
+                <div class="track-line"></div>
+                <i class="eva-3-icon-airplane-going -eva-3-icon-xsm"></i>
+              </div>
+            </div>
+            <div class="time-block" style="text-align:right;">
+              <div class="hour">14:24</div>
+              <div class="airport-code">MDZ</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="leg">
+          <div class="leg-header">
+            <div class="leg-type">
+              <i class="eva-3-icon-airplane-return -eva-3-icon-sm"></i>
+              Vuelta
+            </div>
+            <span class="stops-badge">Directo</span>
+          </div>
+          <div class="leg-times">
+            <div class="time-block">
+              <div class="hour">08:54</div>
+              <div class="airport-code">MDZ</div>
+            </div>
+            <div class="flight-line">
+              <span class="flight-duration">01:39</span>
+              <div class="flight-track">
+                <div class="track-line"></div>
+                <i class="eva-3-icon-airplane-going -eva-3-icon-xsm"></i>
+              </div>
+            </div>
+            <div class="time-block" style="text-align:right;">
+              <div class="hour">10:33</div>
+              <div class="airport-code">EZE</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-separator"></div>
+
+      <div class="col-conditions">
+        <div class="cond-section">
+          <div class="cond-title">Aeropuertos del itinerario</div>
+          <div class="route-codes">
+            <span class="route-text">AEP → MDZ → MDZ → EZE</span>
+            <span class="diff-airport-badge">
+              <i class="eva-3-icon-cross -eva-3-icon-xsm"></i> Aeropuerto distinto
+            </span>
+          </div>
+          <div class="warning-alert">
+            <i class="eva-3-icon-warning-filled -eva-3-icon-sm"></i>
+            AEP · Salida desde Aeroparque. Confirmá con el pasajero.
+          </div>
+        </div>
+        <div class="cond-section">
+          <div class="baggage-row">
+            <i class="eva-3-icon-suitcase -eva-3-icon-md"></i>
+            <div class="baggage-info">
+              <div class="baggage-label">Equipaje por adulto</div>
+              <div class="baggage-value">1 valija 23kg incluida</div>
+            </div>
+          </div>
+        </div>
+        <div class="cond-section">
+          <div class="stay-row">
+            <i class="eva-3-icon-calendar -eva-3-icon-sm"></i>
+            <span>Disfrutá 4 días en Mendoza</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-separator"></div>
+
+      <div class="col-price">
+        <div class="price-block">
+          <div class="price-scope">Precio total · 2 personas</div>
+          <div class="price-total">$669.906</div>
+          <div class="price-per-adult">$334.953 por adulto</div>
+          <div class="price-taxes">Impuestos y tasas incluidos</div>
+        </div>
+        <div class="financing-block">
+          <div class="installments">12 cuotas</div>
+          <button class="eva-3-btn -lg -primary" style="width:100%;">
+            <em class="btn-text">Seleccionar</em>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <span class="footer-coverage">Tarifas sujetas a disponibilidad al momento de emitir.</span>
+      <a href="#" class="footer-support">
+        <i class="eva-3-icon-question-circle -eva-3-icon-sm"></i>
+        Soporte para agencias
+      </a>
+    </footer>
+
+  </main>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "eva": {
+    "version": "3",
+    "components": [
+      "button",
+      "input-field",
+      "select-field",
+      "empty-state-message",
+      "heading",
+      "tag",
+      "segmented-control"
+    ],
+    "icons": [
+      "airplane-going",
+      "airplane-return",
+      "calendar",
+      "suitcase",
+      "users",
+      "flights",
+      "search",
+      "chevron-down",
+      "chevron-right",
+      "swap-arrows",
+      "warning-filled",
+      "location",
+      "trend-up",
+      "card",
+      "partly-cloudy"
+    ],
+    "teamMail": "prototipo@despegar.com",
+    "teamName": "skill-eva-ui-4-designers",
+    "appName": "skill-eva-ui-4-designers",
+    "management": "UX",
+    "product": "flights"
+  }
+}

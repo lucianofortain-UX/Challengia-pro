@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buscador de vuelos — HotelDO</title>
+  <!-- EVA UI css resources start -->
+  <link rel="stylesheet" href="https://www.staticontent.com/eva-core/static/eva/eva-core.min.css">
+  <link rel="stylesheet" href="https://www.staticontent.com/eva-core/static/eva/eva.min.css">
+  <!-- EVA UI css resources end -->
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand-primary: #4300D2;
+      --brand-accent: #6832DB;
+      --neutral-800: #323439;
+      --neutral-700: #565A60;
+      --neutral-600: #72777F;
+      --neutral-400: #C0C4CC;
+      --neutral-300: #DDE1E8;
+      --neutral-100: #F2F4F5;
+      --white: #FFFFFF;
+      --success-high: #01423A;
+      --active-indicator: #F6AEA7;
+      --font: 'Rubik', sans-serif;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--neutral-100);
+      color: var(--neutral-800);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ─────────────────────────────────────────── */
+    header {
+      background: var(--neutral-800);
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 64px;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 32px; }
+
+    .brand { display: flex; align-items: center; gap: 10px; }
+
+    .brand-symbol {
+      width: 32px; height: 32px;
+      background: var(--brand-primary);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 17px; font-weight: 700;
+    }
+
+    .brand-name { color: white; font-size: 21px; font-weight: 600; }
+
+    .brand-badge {
+      background: var(--brand-accent); color: white;
+      font-size: 10px; font-weight: 600;
+      padding: 3px 7px; border-radius: 99px;
+    }
+
+    nav { display: flex; align-items: center; gap: 24px; }
+
+    .nav-link {
+      color: white; font-size: 14px; font-weight: 400;
+      text-decoration: none; opacity: 0.85;
+    }
+
+    .nav-link.active {
+      font-weight: 500; opacity: 1;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+
+    .nav-link.active::after {
+      content: ''; display: block;
+      width: 44px; height: 3px;
+      background: var(--active-indicator); border-radius: 3px;
+    }
+
+    .header-right { display: flex; align-items: center; gap: 12px; }
+
+    .agency-context { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+    .agency-name { color: white; font-size: 12px; font-weight: 500; }
+    .agency-area { color: var(--neutral-400); font-size: 11px; }
+
+    .avatar { width: 34px; height: 34px; border-radius: 50%; background: #7A7F8A; }
+
+    /* ── CONTENT ─────────────────────────────────────────── */
+    main { padding: 48px 64px 64px; display: flex; flex-direction: column; gap: 32px; }
+
+    .section-label { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .accent-bar { width: 4px; height: 16px; background: var(--brand-primary); border-radius: 2px; }
+    .section-label span { font-size: 14px; font-weight: 500; color: var(--neutral-700); letter-spacing: 0.5px; }
+
+    .page-title { font-size: 44px; font-weight: 500; color: var(--neutral-800); line-height: 52px; }
+    .page-description { font-size: 16px; color: var(--neutral-700); line-height: 24px; max-width: 760px; margin-top: 8px; }
+
+    /* ── SEARCH FORM ─────────────────────────────────────── */
+    .search-form {
+      background: var(--white);
+      border-radius: 16px; padding: 32px;
+      box-shadow: 0 12px 20px 0 rgba(84,89,98,0.1);
+      display: flex; flex-direction: column; gap: 24px;
+    }
+
+    .trip-type-row { display: flex; align-items: center; justify-content: space-between; }
+
+    .segmented-control {
+      display: flex; background: var(--neutral-100);
+      border-radius: 99px; padding: 4px;
+    }
+
+    .seg-item {
+      padding: 10px 20px; font-size: 14px; font-weight: 500;
+      color: var(--neutral-400); border-radius: 99px;
+      cursor: pointer; border: none; background: transparent;
+      font-family: var(--font); transition: all 0.15s;
+    }
+
+    .seg-item.active {
+      background: var(--white); color: var(--neutral-800);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    }
+
+    .agency-rate {
+      display: flex; align-items: center; gap: 8px;
+      color: var(--success-high); font-size: 14px;
+    }
+
+    .agency-rate i { font-size: 18px; }
+
+    /* Route row */
+    .route-row { display: flex; align-items: flex-start; gap: 12px; }
+
+    .input-field {
+      flex: 1; border: 1px solid var(--neutral-300); border-radius: 8px;
+      padding: 10px 16px; display: flex; flex-direction: column; gap: 4px;
+      min-height: 56px; justify-content: center;
+    }
+
+    .input-field label { font-size: 12px; color: var(--neutral-600); }
+    .input-field .input-value { font-size: 14px; font-weight: 500; color: var(--neutral-800); }
+
+    .swap-btn {
+      width: 44px; height: 56px;
+      background: var(--neutral-100); border-radius: 99px;
+      display: flex; align-items: center; justify-content: center;
+      border: none; cursor: pointer; flex-shrink: 0;
+      color: var(--neutral-700); font-size: 20px;
+    }
+
+    .date-field {
+      width: 392px; flex-shrink: 0;
+      border: 1px solid var(--neutral-300); border-radius: 8px;
+      padding: 10px 16px; display: flex; align-items: center; gap: 14px;
+      min-height: 76px;
+    }
+
+    .date-field i { color: var(--neutral-600); flex-shrink: 0; }
+
+    .date-field .dates-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .date-field .dates-info label { font-size: 12px; color: var(--neutral-600); }
+
+    .dates-selection {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 14px; font-weight: 500; color: var(--neutral-800);
+    }
+
+    .dates-selection i { color: var(--neutral-600); }
+
+    .nights-badge {
+      background: var(--neutral-100); color: var(--neutral-700);
+      font-size: 12px; padding: 5px 8px; border-radius: 99px; white-space: nowrap;
+    }
+
+    /* Preferences row */
+    .preferences-row { display: flex; align-items: flex-end; gap: 12px; }
+
+    .select-field {
+      border: 1px solid var(--neutral-300); border-radius: 8px;
+      padding: 10px 16px; display: flex; flex-direction: column; gap: 4px;
+      min-height: 56px; justify-content: center; cursor: pointer;
+    }
+
+    .select-field.passengers { flex: 0 0 402px; }
+    .select-field.cabin      { flex: 0 0 402px; }
+    .select-field.currency   { flex: 0 0 188px; }
+
+    .select-field label { font-size: 12px; color: var(--neutral-600); }
+
+    .select-value-row {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .select-value-row span { font-size: 14px; font-weight: 500; color: var(--neutral-800); }
+    .select-value-row i { color: var(--neutral-600); }
+
+    /* EVA button override to fit layout */
+    .eva-3-btn.-lg.-primary {
+      height: 48px; padding: 0 24px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+
+    /* ── RESULTS EMPTY STATE ─────────────────────────────── */
+    .results-section { display: flex; flex-direction: column; gap: 16px; }
+
+    .results-header-row {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .results-title { font-size: 20px; font-weight: 500; color: var(--neutral-800); }
+    .results-status { font-size: 12px; color: var(--neutral-600); }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <div class="brand">
+        <div class="brand-symbol">H</div>
+        <span class="brand-name">HotelDO</span>
+        <span class="brand-badge">B2B</span>
+      </div>
+      <nav>
+        <a href="#" class="nav-link">Inicio</a>
+        <a href="#" class="nav-link active">Vuelos</a>
+        <a href="#" class="nav-link">Hoteles</a>
+        <a href="#" class="nav-link">Reservas</a>
+      </nav>
+    </div>
+    <div class="header-right">
+      <div class="agency-context">
+        <span class="agency-name">Viajes Central</span>
+        <span class="agency-area">Buscador de vuelos</span>
+      </div>
+      <div class="avatar"></div>
+      <i class="eva-3-icon-chevron-down -eva-3-icon-xsm" style="color:#C0C4CC;"></i>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main>
+
+    <div>
+      <div class="section-label">
+        <div class="accent-bar"></div>
+        <span>VENTA DE VUELOS</span>
+      </div>
+      <h1 class="page-title">Buscador de vuelos</h1>
+      <p class="page-description">Cotizá opciones con tarifas preferenciales para agencias. Todos los precios incluyen impuestos.</p>
+    </div>
+
+    <!-- SEARCH FORM -->
+    <div class="search-form">
+
+      <div class="trip-type-row">
+        <div class="segmented-control">
+          <button class="seg-item active">Ida y vuelta</button>
+          <button class="seg-item">Solo ida</button>
+          <button class="seg-item">Multidestino</button>
+        </div>
+        <div class="agency-rate">
+          <i class="eva-3-icon-promotion -eva-3-icon-sm"></i>
+          Tarifas exclusivas HotelDO
+        </div>
+      </div>
+
+      <div class="route-row">
+        <div class="input-field">
+          <label>Origen</label>
+          <span class="input-value">Buenos Aires • EZE / AEP</span>
+        </div>
+        <button class="swap-btn" title="Intercambiar origen y destino">
+          <i class="eva-3-icon-swap-arrows -eva-3-icon-sm"></i>
+        </button>
+        <div class="input-field">
+          <label>Destino</label>
+          <span class="input-value">Mendoza • MDZ</span>
+        </div>
+        <div class="date-field">
+          <i class="eva-3-icon-calendar-flex -eva-3-icon-md"></i>
+          <div class="dates-info">
+            <label>Fechas</label>
+            <div class="dates-selection">
+              <span>20 oct 2026</span>
+              <i class="eva-3-icon-chevron-right -eva-3-icon-xsm"></i>
+              <span>25 oct 2026</span>
+            </div>
+          </div>
+          <div class="nights-badge">5 noches</div>
+        </div>
+      </div>
+
+      <div class="preferences-row">
+        <div class="select-field passengers">
+          <label>Pasajeros</label>
+          <div class="select-value-row">
+            <span>2 adultos</span>
+            <i class="eva-3-icon-chevron-down -eva-3-icon-xsm"></i>
+          </div>
+        </div>
+        <div class="select-field cabin">
+          <label>Clase</label>
+          <div class="select-value-row">
+            <span>Económica</span>
+            <i class="eva-3-icon-chevron-down -eva-3-icon-xsm"></i>
+          </div>
+        </div>
+        <div class="select-field currency">
+          <label>Moneda</label>
+          <div class="select-value-row">
+            <span>ARS</span>
+            <i class="eva-3-icon-chevron-down -eva-3-icon-xsm"></i>
+          </div>
+        </div>
+        <button class="eva-3-btn -lg -primary" onclick="window.location.href='resultados.html'">
+          <em class="btn-text">Buscar vuelos</em>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- RESULTS EMPTY STATE -->
+    <div class="results-section">
+      <div class="results-header-row">
+        <h2 class="results-title">Resultados de la búsqueda</h2>
+        <span class="results-status">Sin búsqueda activa</span>
+      </div>
+      <div class="eva-3-empty-state-message -box-layout -icon">
+        <div class="empty-state-message-container">
+          <div class="empty-state-message-image">
+            <img src="https://www.staticontent.com/eva-core/assets/illustrations/despegar/icons/0.0.9/people.svg" alt="" />
+          </div>
+          <div class="empty-state-message-content">
+            <div class="eva-3-heading -h3 empty-state-message-title">Buscá vuelos para comparar opciones</div>
+            <p class="eva-3-heading -body-1 empty-state-message-description">Completá origen, destino, fechas y pasajeros. Acá vas a ver tarifas, equipaje, escalas y condiciones para cotizar.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</body>
+</html>
