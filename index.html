@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Challengia Pro — Flujo de búsqueda de vuelos (prototipo EVA UI)</title>
+  <link rel="stylesheet" href="./eva/eva-core.min.css">
+  <link rel="stylesheet" href="./eva/eva.min.css">
+  <link rel="stylesheet" href="./styles/overrides.css">
+</head>
+<body>
+
+  <!-- ======================= PASO 1: HOME / BÚSQUEDA ======================= -->
+  <div class="screen" id="screen-home">
+    <div class="app-navbar">
+      <img class="app-navbar-logo" src="./assets/azul-logo.svg" alt="Azul" height="24">
+      <div class="app-navbar-actions">
+        <button class="eva-3-btn -md -link -navbar-ghost">Ayuda</button>
+        <div class="app-navbar-user">
+          <i class="eva-3-icon-user"></i>
+          <span>Iniciar sesión</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="search-panel">
+      <h1 class="search-panel-title">Pasajes aéreos</h1>
+
+      <div class="search-type-tabs">
+        <button class="search-type-tab -active" type="button">Ida y vuelta</button>
+        <button class="search-type-tab" type="button">Solo ida</button>
+        <button class="search-type-tab" type="button">Múltiples destinos</button>
+      </div>
+
+      <div class="search-fields">
+        <div class="search-origin-destination">
+          <div class="search-field">
+            <span class="search-field-label">Origen</span>
+            <input class="search-field-value" id="field-origin" value="Buenos Aires, Argentina" readonly>
+          </div>
+          <button class="search-swap-btn" id="btn-swap" type="button" aria-label="Intercambiar origen y destino">
+            <i class="eva-3-icon-swap-arrows"></i>
+          </button>
+          <div class="search-field">
+            <span class="search-field-label">Destino</span>
+            <input class="search-field-value" id="field-destination" value="Mendoza, Argentina" readonly>
+          </div>
+        </div>
+
+        <div class="search-field">
+          <span class="search-field-label">Ida</span>
+          <input class="search-field-value" value="Mar. 20 oct. 2026" readonly>
+        </div>
+        <div class="search-field">
+          <span class="search-field-label">Vuelta</span>
+          <input class="search-field-value" value="Dom. 25 oct. 2026" readonly>
+        </div>
+        <div class="search-field">
+          <span class="search-field-label">Pasajeros y clase</span>
+          <input class="search-field-value" value="2 adultos, Económica" readonly>
+        </div>
+
+        <button class="eva-3-btn -lg -primary search-submit-btn" id="btn-search-home" type="button">
+          <i class="eva-3-icon-search btn-icon"></i>
+          <em class="btn-text">Buscar</em>
+        </button>
+      </div>
+    </div>
+
+    <div class="home-hero-banner">
+      <img src="./assets/azul-hero-beach.png" alt="">
+    </div>
+
+    <div class="home-hero">
+      <h2 class="home-hero-title">Ofertas para los destinos más buscados</h2>
+      <div class="home-offer-cards">
+        <div class="home-offer-card">
+          <div class="home-offer-card-image"><img src="./assets/azul-dest-rio.jpeg" alt="Río de Janeiro"></div>
+          <div class="home-offer-card-body">
+            <div class="title">Vuelo directo BUE - Río de Janeiro</div>
+            <div class="price">Desde $ 499.305</div>
+          </div>
+        </div>
+        <div class="home-offer-card">
+          <div class="home-offer-card-image"><img src="./assets/azul-dest-desert.jpeg" alt="Quebrada de Humahuaca"></div>
+          <div class="home-offer-card-body">
+            <div class="title">Vuelo directo BUE - Jujuy</div>
+            <div class="price">Desde $ 610.032</div>
+          </div>
+        </div>
+        <div class="home-offer-card">
+          <div class="home-offer-card-image"><img src="./assets/azul-dest-palace.jpeg" alt="Madrid"></div>
+          <div class="home-offer-card-body">
+            <div class="title">Vuelo directo BUE - Madrid</div>
+            <div class="price">Desde $ 552.140</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= PASO 2: LOADING ======================= -->
+  <div class="screen" id="screen-loading" hidden>
+    <div class="app-navbar">
+      <img class="app-navbar-logo" src="./assets/azul-logo.svg" alt="Azul" height="24">
+      <div class="app-navbar-actions">
+        <div class="app-navbar-user">
+          <i class="eva-3-icon-user"></i>
+          <span>Iniciar sesión</span>
+        </div>
+      </div>
+    </div>
+    <div class="loading-screen">
+      <img class="loading-plane-gif" src="./assets/azul-plane-loading.gif" alt="" width="160" height="160">
+      <p class="loading-title">Estamos buscando los mejores vuelos para tu viaje</p>
+      <div class="loading-spinner"></div>
+    </div>
+  </div>
+
+  <!-- ======================= PASO 3: RESULTADOS ======================= -->
+  <div class="screen results-page" id="screen-results" hidden>
+    <div class="app-navbar">
+      <img class="app-navbar-logo" src="./assets/azul-logo.svg" alt="Azul" height="24">
+      <div class="app-navbar-actions">
+        <div class="app-navbar-user">
+          <i class="eva-3-icon-user"></i>
+          <span>Iniciar sesión</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="eva-3-results-list">
+      <div class="eva-3-container" style="padding-top:24px;">
+        <div class="eva-3-row">
+
+          <!-- Sidebar: searchbox v2 + filtros -->
+          <div class="col -sm-12 -lg-3 results-list-sidebar">
+
+            <!-- Re-búsqueda (Figma node 207:6903 — searchbox-v2) -->
+            <div class="sbv2-card">
+              <h2 class="sbv2-title">Vuelos</h2>
+
+              <div class="sbv2-tabs">
+                <button class="sbv2-tab -active" type="button">Ida y vuelta</button>
+                <button class="sbv2-tab" type="button">Solo ida</button>
+                <button class="sbv2-tab" type="button">Múltiples destinos</button>
+              </div>
+
+              <!-- Origen + Destino apilados con línea punteada -->
+              <div class="sbv2-od">
+                <div class="sbv2-od-dashed"></div>
+                <div class="sbv2-od-origin">
+                  <div class="sbv2-od-icon"><span class="sbv2-origin-circle"></span></div>
+                  <div class="sbv2-od-text">
+                    <span class="sbv2-label">Origen</span>
+                    <input class="sbv2-value" id="field-origin-sidebar" value="Buenos Aires, Argentina" readonly>
+                  </div>
+                </div>
+                <div class="sbv2-od-dest">
+                  <div class="sbv2-od-icon"><i class="eva-3-icon-location"></i></div>
+                  <div class="sbv2-od-text">
+                    <span class="sbv2-label">Destino</span>
+                    <input class="sbv2-value" id="field-destination-sidebar" value="Mendoza, Argentina" readonly>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Fechas en dos columnas -->
+              <div class="sbv2-dates">
+                <div class="sbv2-date-col">
+                  <span class="sbv2-label">Fechas</span>
+                  <span class="sbv2-value">Mar. 20 oct. 2026</span>
+                </div>
+                <div class="sbv2-dates-sep"></div>
+                <div class="sbv2-date-col">
+                  <span class="sbv2-label">13 días</span>
+                  <span class="sbv2-value">Dom. 25 oct. 2026</span>
+                </div>
+              </div>
+
+              <!-- Toggle: Cualquier fecha más barata -->
+              <label class="sbv2-flex-date">
+                <span class="sbv2-toggle"></span>
+                <span class="sbv2-flex-label">Cualquier fecha más barata</span>
+              </label>
+
+              <!-- Pasajeros y clase -->
+              <div class="sbv2-pax">
+                <div class="sbv2-pax-icon"><i class="eva-3-icon-user"></i></div>
+                <div class="sbv2-pax-text">
+                  <span class="sbv2-label">Pasajeros y clase</span>
+                  <input class="sbv2-value" value="2 adultos, Económica" readonly>
+                </div>
+              </div>
+
+              <button class="sbv2-btn" id="btn-search-sidebar" type="button">
+                <i class="eva-3-icon-search"></i>
+                Buscar
+              </button>
+            </div>
+
+            <!-- Panel de filtros (Figma node 207:6996 — Barra lateral / Filtros) -->
+            <div class="filters-panel">
+
+              <!-- Moneda -->
+              <div class="fp-section">
+                <p class="fp-title">Moneda</p>
+                <div class="fp-currency-field">
+                  <span class="fp-currency-value">Pesos</span>
+                  <i class="eva-3-icon-chevron-down"></i>
+                </div>
+              </div>
+
+              <div class="fp-divider"></div>
+
+              <!-- Aerolíneas (expandido) -->
+              <div class="fp-section -open" data-filter-section="airlines">
+                <button class="fp-section-header" type="button">
+                  <span class="fp-title">Aerolíneas</span>
+                  <i class="eva-3-icon-chevron-up fp-chevron"></i>
+                </button>
+                <div class="fp-section-body">
+                  <label class="fp-item">
+                    <input type="checkbox" class="fp-checkbox" data-airline="AR" checked>
+                    <span class="fp-airline-logo -ar">AR</span>
+                    <span class="fp-item-name">Aerolíneas Argentinas</span>
+                    <span class="fp-item-count" id="count-airline-AR">3</span>
+                  </label>
+                  <label class="fp-item">
+                    <input type="checkbox" class="fp-checkbox" data-airline="JA" checked>
+                    <span class="fp-airline-logo -ja">JS</span>
+                    <span class="fp-item-name">JetSMART</span>
+                    <span class="fp-item-count" id="count-airline-JA">7</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="fp-divider"></div>
+
+              <!-- Escalas (expandido) -->
+              <div class="fp-section -open" data-filter-section="stops">
+                <button class="fp-section-header" type="button">
+                  <span class="fp-title">Escalas</span>
+                  <i class="eva-3-icon-chevron-up fp-chevron"></i>
+                </button>
+                <div class="fp-section-body">
+                  <label class="fp-item">
+                    <input type="radio" name="fp-stops" value="all" checked>
+                    <span class="fp-item-name">Todas las escalas</span>
+                    <span class="fp-item-count">10</span>
+                  </label>
+                  <label class="fp-item">
+                    <input type="radio" name="fp-stops" value="0">
+                    <span class="fp-item-name">Directo</span>
+                    <span class="fp-item-count">9</span>
+                  </label>
+                  <label class="fp-item">
+                    <input type="radio" name="fp-stops" value="1">
+                    <span class="fp-item-name">1 Escala</span>
+                    <span class="fp-item-count">1</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="fp-divider"></div>
+
+              <!-- Equipaje (expandido) -->
+              <div class="fp-section -open" data-filter-section="baggage">
+                <button class="fp-section-header" type="button">
+                  <span class="fp-title">Equipaje</span>
+                  <i class="eva-3-icon-chevron-up fp-chevron"></i>
+                </button>
+                <div class="fp-section-body">
+                  <label class="fp-item">
+                    <input type="radio" name="fp-baggage" value="all" checked>
+                    <span class="fp-item-name">Todas las opciones</span>
+                    <span class="fp-item-count">10</span>
+                  </label>
+                  <label class="fp-item">
+                    <input type="radio" name="fp-baggage" value="no-carry">
+                    <span class="fp-item-name">Sin equipaje de mano</span>
+                    <span class="fp-item-count">7</span>
+                  </label>
+                  <label class="fp-item">
+                    <input type="radio" name="fp-baggage" value="carry">
+                    <span class="fp-item-name">Con equipaje de mano</span>
+                    <span class="fp-item-count">3</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="fp-divider"></div>
+
+              <!-- Duración (colapsado) -->
+              <div class="fp-section" data-filter-section="duration">
+                <button class="fp-section-header" type="button">
+                  <span class="fp-title">Duración</span>
+                  <i class="eva-3-icon-chevron-down fp-chevron"></i>
+                </button>
+              </div>
+
+              <div class="fp-divider"></div>
+
+              <!-- Horario (colapsado) -->
+              <div class="fp-section" data-filter-section="schedule">
+                <button class="fp-section-header" type="button">
+                  <span class="fp-title">Horario</span>
+                  <i class="eva-3-icon-chevron-down fp-chevron"></i>
+                </button>
+              </div>
+
+              <div class="fp-divider"></div>
+
+              <!-- Aeropuerto (colapsado) -->
+              <div class="fp-section" data-filter-section="airport">
+                <button class="fp-section-header" type="button">
+                  <span class="fp-title">Aeropuerto</span>
+                  <i class="eva-3-icon-chevron-down fp-chevron"></i>
+                </button>
+              </div>
+
+              <div class="fp-divider"></div>
+
+              <!-- Alianzas (colapsado) -->
+              <div class="fp-section" data-filter-section="alliances">
+                <button class="fp-section-header" type="button">
+                  <span class="fp-title">Alianzas</span>
+                  <i class="eva-3-icon-chevron-down fp-chevron"></i>
+                </button>
+              </div>
+
+            </div><!-- /filters-panel -->
+
+          </div>
+
+          <!-- Resultados -->
+          <div class="col -sm-12 -lg-9 results-list-main">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+              <i class="eva-3-icon-flights"></i>
+              <h2 class="eva-3-h4" style="margin:0;" id="results-title">Seleccioná tu vuelo</h2>
+            </div>
+            <p class="eva-3-body-2 eva-3-tc-gray-2" id="results-count">10 vuelos encontrados</p>
+
+            <div class="results-sort-tabs">
+              <button class="results-sort-tab -active" data-sort="recommended" type="button">
+                <strong>Recomendados</strong>
+              </button>
+              <button class="results-sort-tab" data-sort="cheapest" type="button">
+                <strong>Más baratos</strong>
+              </button>
+              <button class="results-sort-tab" data-sort="fastest" type="button">
+                <strong>Más rápidos</strong>
+              </button>
+            </div>
+
+            <div id="results-items"></div>
+
+            <div class="results-list-footer" style="display:flex; justify-content:center; margin-top:24px;">
+              <div class="eva-3-pagination">
+                <ul class="pagination-container">
+                  <li class="pagination-item-container page-prev">
+                    <a class="pagination-item" href="#">Anterior</a>
+                  </li>
+                  <li class="pagination-item-container">
+                    <a class="pagination-item -active" href="#">1</a>
+                  </li>
+                  <li class="pagination-item-container">
+                    <a class="pagination-item" href="#">2</a>
+                  </li>
+                  <li class="pagination-item-container page-next">
+                    <a class="pagination-item" href="#">Siguiente</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= Modal de desglose de precio ======================= -->
+  <div class="eva-3-modal -sm" id="price-modal">
+    <div class="modal-overlay" id="price-modal-overlay"></div>
+    <div class="modal-header">
+      <div class="modal-title-container">
+        <h4 class="modal-title">Desglose de precio</h4>
+      </div>
+      <i class="eva-3-icon-cross modal-close" id="price-modal-close" role="button" tabindex="0" aria-label="Cerrar"></i>
+    </div>
+    <div class="modal-content">
+      <div class="eva-3-price-detail -inner-padding">
+        <div class="-price-detail-item -price-main-title">Precio final 2 personas</div>
+        <div class="-price-detail-item -price-main">
+          <em class="-price-detail-currency">$</em>
+          <span id="modal-price-total">0</span>
+        </div>
+        <div class="-price-detail-item -double-col -border-top">
+          <div class="-price-detail-item-title">2 Adultos</div>
+          <div class="-price-detail-item-description" id="modal-price-adults">$ 0</div>
+        </div>
+        <div class="-price-detail-item -double-col -border-top">
+          <div class="-price-detail-item-title">Impuestos, tasas y cargos</div>
+          <div class="-price-detail-item-description" id="modal-price-taxes">$ 0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ------------------------------------------------------------------
+    // Mock data: subset real de flights.json (búsqueda BUE-MDZ, 2 adultos)
+    // ------------------------------------------------------------------
+    const FLIGHTS = [
+      { airline: "JA", airlineName: "JetSMART", outDep: "06:00", outDepApt: "EZE", outArr: "07:59", outArrApt: "MDZ", outDuration: "01h 59m", stopsOut: 0, inDep: "08:54", inDepApt: "MDZ", inArr: "10:33", inArrApt: "EZE", inDuration: "01h 39m", stopsIn: 0, price: 669906, carryOn: false },
+      { airline: "AR", airlineName: "Aerolíneas Argentinas", outDep: "14:20", outDepApt: "EZE", outArr: "16:20", outArrApt: "MDZ", outDuration: "02h 00m", stopsOut: 0, inDep: "10:40", inDepApt: "MDZ", inArr: "17:10", inArrApt: "AEP", inDuration: "06h 30m", stopsIn: 1, price: 499305, carryOn: false },
+      { airline: "JA", airlineName: "JetSMART", outDep: "12:25", outDepApt: "AEP", outArr: "14:24", outArrApt: "MDZ", outDuration: "01h 59m", stopsOut: 0, inDep: "08:54", inDepApt: "MDZ", inArr: "10:33", inArrApt: "EZE", inDuration: "01h 39m", stopsIn: 0, price: 669906, carryOn: false },
+      { airline: "AR", airlineName: "Aerolíneas Argentinas", outDep: "06:05", outDepApt: "AEP", outArr: "08:05", outArrApt: "MDZ", outDuration: "02h 00m", stopsOut: 0, inDep: "07:30", inDepApt: "MDZ", inArr: "09:10", inArrApt: "AEP", inDuration: "01h 40m", stopsIn: 0, price: 685776, carryOn: false },
+      { airline: "JA", airlineName: "JetSMART", outDep: "16:41", outDepApt: "AEP", outArr: "18:40", outArrApt: "MDZ", outDuration: "01h 59m", stopsOut: 0, inDep: "08:54", inDepApt: "MDZ", inArr: "10:33", inArrApt: "EZE", inDuration: "01h 39m", stopsIn: 0, price: 704406, carryOn: false },
+      { airline: "JA", airlineName: "JetSMART", outDep: "16:41", outDepApt: "AEP", outArr: "18:40", outArrApt: "MDZ", outDuration: "01h 59m", stopsOut: 0, inDep: "08:54", inDepApt: "MDZ", inArr: "10:33", inArrApt: "EZE", inDuration: "01h 39m", stopsIn: 0, price: 707028, carryOn: true },
+      { airline: "JA", airlineName: "JetSMART", outDep: "12:25", outDepApt: "AEP", outArr: "14:24", outArrApt: "MDZ", outDuration: "01h 59m", stopsOut: 0, inDep: "08:54", inDepApt: "MDZ", inArr: "10:33", inArrApt: "EZE", inDuration: "01h 39m", stopsIn: 0, price: 696126, carryOn: true },
+      { airline: "JA", airlineName: "JetSMART", outDep: "06:00", outDepApt: "EZE", outArr: "07:59", outArrApt: "MDZ", outDuration: "01h 59m", stopsOut: 0, inDep: "08:54", inDepApt: "MDZ", inArr: "10:33", inArrApt: "EZE", inDuration: "01h 39m", stopsIn: 0, price: 696126, carryOn: true },
+      { airline: "AR", airlineName: "Aerolíneas Argentinas", outDep: "12:20", outDepApt: "AEP", outArr: "14:20", outArrApt: "MDZ", outDuration: "02h 00m", stopsOut: 0, inDep: "07:30", inDepApt: "MDZ", inArr: "09:10", inArrApt: "AEP", inDuration: "01h 40m", stopsIn: 0, price: 734937, carryOn: false },
+      { airline: "JA", airlineName: "JetSMART", outDep: "16:41", outDepApt: "AEP", outArr: "18:40", outArrApt: "MDZ", outDuration: "01h 59m", stopsOut: 0, inDep: "08:54", inDepApt: "MDZ", inArr: "10:33", inArrApt: "EZE", inDuration: "01h 39m", stopsIn: 0, price: 615260, carryOn: false },
+    ];
+
+    function durationToMinutes(d) {
+      const [h, m] = d.replace('h', '').replace('m', '').split(' ').filter(Boolean).map(Number);
+      return h * 60 + m;
+    }
+
+    function formatPrice(n) {
+      return n.toLocaleString('es-AR');
+    }
+
+    // ------------------------------------------------------------------
+    // Estado global: sort y filtros activos
+    // ------------------------------------------------------------------
+    let currentSort = 'recommended';
+    const activeFilters = {
+      airlines: new Set(['AR', 'JA']),
+      stops: 'all',
+      baggage: 'all'
+    };
+
+    function getFilteredFlights() {
+      return FLIGHTS.filter(f => {
+        if (!activeFilters.airlines.has(f.airline)) return false;
+        if (activeFilters.stops !== 'all') {
+          const total = f.stopsOut + f.stopsIn;
+          if (total !== parseInt(activeFilters.stops)) return false;
+        }
+        if (activeFilters.baggage === 'no-carry' && f.carryOn) return false;
+        if (activeFilters.baggage === 'carry' && !f.carryOn) return false;
+        return true;
+      });
+    }
+
+    function applySortToFlights(flights) {
+      const copy = flights.slice();
+      if (currentSort === 'cheapest') {
+        copy.sort((a, b) => a.price - b.price);
+      } else if (currentSort === 'fastest') {
+        copy.sort((a, b) => durationToMinutes(a.outDuration) - durationToMinutes(b.outDuration));
+      }
+      return copy;
+    }
+
+    function flightCardHTML(flight, index) {
+      const stopsLabel = flight.stopsOut === 0 ? 'Directo' : flight.stopsOut + ' escala';
+      const carryOnIcon = flight.carryOn
+        ? '<i class="eva-3-icon-handbag -included" title="Equipaje de mano incluido"></i>'
+        : '<i class="eva-3-icon-backpack" title="Solo mochila o cartera"></i>';
+      return `
+        <div class="flight-card" data-index="${index}">
+          <div class="flight-card-main">
+            <div class="flight-card-airline-icon">
+              <i class="eva-3-icon-flights"></i>
+            </div>
+            <div class="flight-card-route">
+              <div class="flight-card-airport">
+                <div class="time">${flight.outDep}</div>
+                <div class="code">${flight.outDepApt}</div>
+              </div>
+              <div class="flight-card-middle">
+                <span class="stops">${stopsLabel}</span>
+                <span class="duration">${flight.outDuration}</span>
+              </div>
+              <div class="flight-card-airport">
+                <div class="time">${flight.outArr}</div>
+                <div class="code">${flight.outArrApt}</div>
+              </div>
+            </div>
+            <div class="flight-card-baggage">
+              ${carryOnIcon}
+              <i class="eva-3-icon-suitcase" title="Equipaje despachado a cargo"></i>
+            </div>
+          </div>
+          <div class="flight-card-pricebox">
+            <div class="flight-card-price-info">
+              <span class="flight-card-price-label">Precio final 2 personas</span>
+              <span class="flight-card-price-value">$ ${formatPrice(flight.price)}<i class="eva-3-icon-info"></i></span>
+              <span class="flight-card-price-sublabel">${flight.airlineName}</span>
+            </div>
+            <button class="eva-3-btn-ghost -md -primary btn-select" data-index="${index}" type="button">
+              <em class="btn-text">Seleccionar</em>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderResults() {
+      const filtered = getFilteredFlights();
+      const sorted = applySortToFlights(filtered);
+      const container = document.getElementById('results-items');
+      container.innerHTML = sorted.map(f => flightCardHTML(f, FLIGHTS.indexOf(f))).join('');
+      document.getElementById('results-count').textContent = sorted.length + ' vuelos encontrados';
+      container.querySelectorAll('.btn-select').forEach(btn => {
+        btn.addEventListener('click', () => openPriceModal(FLIGHTS[Number(btn.dataset.index)]));
+      });
+    }
+
+    function openPriceModal(flight) {
+      const adultsShare = Math.round(flight.price * 0.684);
+      const taxesShare = flight.price - adultsShare;
+      document.getElementById('modal-price-total').textContent = formatPrice(flight.price);
+      document.getElementById('modal-price-adults').textContent = '$ ' + formatPrice(adultsShare);
+      document.getElementById('modal-price-taxes').textContent = '$ ' + formatPrice(taxesShare);
+      document.getElementById('price-modal').classList.add('-show-modal');
+    }
+
+    function closePriceModal() {
+      document.getElementById('price-modal').classList.remove('-show-modal');
+    }
+
+    document.getElementById('price-modal-close').addEventListener('click', closePriceModal);
+    document.getElementById('price-modal-overlay').addEventListener('click', closePriceModal);
+
+    // ------------------------------------------------------------------
+    // Flujo: home -> loading -> resultados
+    // ------------------------------------------------------------------
+    const screenHome = document.getElementById('screen-home');
+    const screenLoading = document.getElementById('screen-loading');
+    const screenResults = document.getElementById('screen-results');
+
+    function runSearch() {
+      screenHome.hidden = true;
+      screenResults.hidden = true;
+      screenLoading.hidden = false;
+      setTimeout(() => {
+        screenLoading.hidden = true;
+        screenResults.hidden = false;
+        renderResults();
+      }, 1500);
+    }
+
+    document.getElementById('btn-search-home').addEventListener('click', runSearch);
+    document.getElementById('btn-search-sidebar').addEventListener('click', runSearch);
+
+    document.getElementById('btn-swap').addEventListener('click', () => {
+      const origin = document.getElementById('field-origin');
+      const destination = document.getElementById('field-destination');
+      const tmp = origin.value;
+      origin.value = destination.value;
+      destination.value = tmp;
+    });
+
+    // Tabs de ordenamiento
+    document.querySelectorAll('.results-sort-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.results-sort-tab').forEach(t => t.classList.remove('-active'));
+        tab.classList.add('-active');
+        currentSort = tab.dataset.sort;
+        renderResults();
+      });
+    });
+
+    // Tabs de tipo de búsqueda (home y sbv2)
+    document.querySelectorAll('.search-type-tab, .sbv2-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const siblings = tab.parentElement.querySelectorAll('.search-type-tab, .sbv2-tab');
+        siblings.forEach(t => t.classList.remove('-active'));
+        tab.classList.add('-active');
+      });
+    });
+
+    // ------------------------------------------------------------------
+    // Secciones de filtros: toggle expand/collapse
+    // ------------------------------------------------------------------
+    document.querySelectorAll('[data-filter-section]').forEach(section => {
+      const header = section.querySelector('.fp-section-header');
+      if (!header) return;
+      header.addEventListener('click', () => {
+        const isOpen = section.classList.contains('-open');
+        section.classList.toggle('-open', !isOpen);
+        const chevron = header.querySelector('.fp-chevron');
+        if (chevron) {
+          chevron.className = isOpen
+            ? 'eva-3-icon-chevron-down fp-chevron'
+            : 'eva-3-icon-chevron-up fp-chevron';
+        }
+      });
+    });
+
+    // ------------------------------------------------------------------
+    // Filtros funcionales
+    // ------------------------------------------------------------------
+
+    // Aerolíneas (checkboxes)
+    document.querySelectorAll('.fp-checkbox[data-airline]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        if (cb.checked) activeFilters.airlines.add(cb.dataset.airline);
+        else activeFilters.airlines.delete(cb.dataset.airline);
+        renderResults();
+      });
+    });
+
+    // Escalas (radio)
+    document.querySelectorAll('input[name="fp-stops"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        if (radio.checked) { activeFilters.stops = radio.value; renderResults(); }
+      });
+    });
+
+    // Equipaje (radio)
+    document.querySelectorAll('input[name="fp-baggage"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        if (radio.checked) { activeFilters.baggage = radio.value; renderResults(); }
+      });
+    });
+  </script>
+
+</body>
+</html>

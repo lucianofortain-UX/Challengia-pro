@@ -1,0 +1,6 @@
+// El modal de EVA ya controla su visibilidad con la clase -show-modal;
+// acá solo se agregan ajustes puntuales de layout para el desglose de precio.
+
+#price-modal .-price-detail-item-description {
+  color: $color-neutral-800;
+}
