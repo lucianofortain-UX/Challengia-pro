@@ -1,0 +1,37 @@
+// Pantalla de carga — "Estamos esquentando os motores" (node 207:8037)
+
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  height: calc(100vh - 64px);
+  background: $color-white;
+  text-align: center;
+
+  .loading-plane-gif {
+    display: block;
+  }
+
+  .loading-title {
+    color: $color-brand-primary-900;
+    font-size: 24px;
+    font-weight: 400;
+    margin: 0;
+    max-width: 420px;
+  }
+
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid $color-neutral-300;
+    border-top-color: $color-brand-tertiary-500;
+    border-radius: 50%;
+    animation: loading-spin 0.8s linear infinite;
+  }
+}
+
+@keyframes loading-spin {
+  to { transform: rotate(360deg); }
+}

@@ -1,0 +1,17 @@
+// Overrides CSS sobre EVA UI para acercar el prototipo al flujo de Figma
+// "Azul" (https://www.figma.com/design/lkzIqV2gMFKzKINUoWMXiV/Azul?node-id=207-4556).
+// Fuente de verdad de estilos: EVA UI (./eva/eva.min.css). Este archivo solo
+// pisa propiedades puntuales (color, spacing, radius) — nunca duplica
+// componentes enteros.
+//
+// No hay pipeline de build en este prototipo estático: compilar a mano con
+// `sass styles/scss/main.scss styles/overrides.css` y versionar el .css,
+// que es lo que carga index.html.
+
+@import 'variables';
+@import 'navbar';
+@import 'searchbox';
+@import 'screens';
+@import 'results';
+@import 'loading';
+@import 'modal';

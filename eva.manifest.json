@@ -1,0 +1,40 @@
+{
+  "eva": {
+    "version": "3",
+    "components": [
+      "button",
+      "button-ghost",
+      "heading",
+      "results-list",
+      "cluster-basic",
+      "pricebox-cluster",
+      "price-detail",
+      "luggage",
+      "tag",
+      "pagination",
+      "filters-vertical",
+      "select",
+      "modal"
+    ],
+    "icons": [
+      "flights",
+      "airplane-going",
+      "airplane-return",
+      "suitcase",
+      "backpack",
+      "handbag",
+      "info",
+      "chevron-down",
+      "filter",
+      "search",
+      "swap-arrows",
+      "departure",
+      "user"
+    ],
+    "teamMail": "mariana.nilo@despegar.com",
+    "teamName": "skill-eva-ui-4-designers",
+    "appName": "skill-eva-ui-4-designers",
+    "management": "UX",
+    "product": "flights"
+  }
+}
