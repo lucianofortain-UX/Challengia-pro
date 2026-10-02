@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resultados de vuelos — Buenos Aires → Mendoza</title>
+  <link rel="stylesheet" href="https://www.staticontent.com/eva-core/static/eva/eva-core.min.css" />
+  <link rel="stylesheet" href="https://www.staticontent.com/eva-core/static/eva/eva.min.css" />
+  <style>
+    /* ===== Layout base ===== */
+    body { background: #f5f5f5; }
+
+    /* ===== Search Header ===== */
+    .search-header {
+      background: #270570;
+      padding: 14px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .search-header-inner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: nowrap;
+    }
+    .search-summary {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .search-summary-route {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+    }
+    .search-summary-details {
+      font-size: 13px;
+      color: rgba(255,255,255,0.75);
+      display: flex;
+      gap: 10px;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .search-summary-detail {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    /* Mobile: compactar header */
+    @media (max-width: 767px) {
+      .search-summary { flex-direction: column; align-items: flex-start; gap: 2px; }
+      .search-summary-route { font-size: 15px; }
+      .search-summary-details { font-size: 12px; gap: 8px; }
+      .search-summary-detail:last-child { display: none; }
+      /* Ocultar el ícono de avión standalone — el texto de ruta ya lo indica */
+      .search-summary > .eva-3-icon-airplane-going { display: none; }
+    }
+
+    /* ===== Active filter chip ===== */
+    .filter-chip-active {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #1a1a2c;
+      color: #fff;
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .filter-chip-remove {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.75);
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      padding: 0;
+      margin-left: 2px;
+    }
+
+    /* ===== Page layout ===== */
+    .results-container { padding: 20px 0 40px; }
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .results-count { font-size: 13px; color: #666; }
+    .results-count strong { color: #1a1a2c; font-weight: 700; }
+
+    /* ===== Inline filters (inside results) ===== */
+    .filters-inline {
+      background: transparent;
+      border: none;
+      padding: 4px 0;
+      margin-bottom: 12px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .filters-inline::-webkit-scrollbar { display: none; }
+    .filters-inner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    /* Evitar que EVA trunque el texto de los chips */
+    .filters-inner .eva-3-tag {
+      flex-shrink: 0;
+      max-width: none !important;
+      min-width: max-content;
+    }
+    .filters-inner .eva-3-tag .tag-text {
+      white-space: nowrap;
+      overflow: visible;
+      text-overflow: clip;
+      max-width: none !important;
+    }
+
+    /* ===== New Flight Card (matching reference screenshot) ===== */
+    .fcard {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e8e8e8;
+      margin-bottom: 10px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .fcard:hover { box-shadow: 0 3px 12px rgba(0,0,0,0.09); }
+
+    /* Recomendado badge */
+    .fcard-badge {
+      background: linear-gradient(90deg, #270570 0%, #4300D2 100%);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 16px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* Top row: airline logo + Detalle link */
+    .fcard-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px 10px;
+    }
+    .fcard-airline-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .fcard-logo {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      background: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 700;
+      color: #555;
+      flex-shrink: 0;
+      letter-spacing: -0.5px;
+    }
+    .fcard-logo.-ar { background: #73c0e8; color: #fff; }
+    .fcard-airline-name { font-size: 13px; color: #666; }
+    .fcard-detail-link {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a1a2c;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+    .fcard-detail-info {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1.5px solid #888;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #888;
+      font-style: normal;
+      font-weight: 600;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    /* Thin separator line */
+    .fcard-sep { height: 1px; background: #f0f0f0; }
+
+    /* Card body: flights section + divider + price */
+    .fcard-body {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px 14px;
+      gap: 0;
+    }
+    .fcard-flights {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* One leg row */
+    .fcard-leg-row {
+      display: flex;
+      align-items: center;
+    }
+    .fcard-leg-row + .fcard-leg-row {
+      border-top: 1px dashed #e8e8e8;
+      padding-top: 8px;
+    }
+
+    /* Departure / arrival time group */
+    .fcard-tgroup { flex-shrink: 0; min-width: 52px; }
+    .fcard-time-big {
+      font-size: 26px;
+      font-weight: 700;
+      color: #1a1a2c;
+      line-height: 1;
+    }
+    .fcard-airport-code {
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 3px;
+    }
+
+    /* Duration (center) */
+    .fcard-dur-center {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      color: #aaa;
+      padding: 0 10px;
+    }
+    .fcard-stops-text {
+      font-size: 10px;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .fcard-stops-text.-direct { color: var(--color-brand-primary-500); }
+    .fcard-stops-text.-layover { color: #e67e22; }
+
+    /* Baggage row (below legs) */
+    .fcard-baggage-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-top: 6px;
+      border-top: 1px solid #f5f5f5;
+      flex-wrap: wrap;
+    }
+    .fcard-bag-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: #bbb;
+    }
+    .fcard-bag-item.-included { color: #333; }
+    .fcard-bag-item.-included .fcard-bag-ico { color: var(--color-brand-primary-500); }
+    .fcard-bag-ico { font-size: 15px; color: #ccc; }
+
+    /* Vertical divider before price */
+    .fcard-vdiv {
+      width: 1px;
+      align-self: stretch;
+      background: #ebebeb;
+      margin: -14px 18px;
+      flex-shrink: 0;
+    }
+
+    /* Price block */
+    .fcard-price-block { flex-shrink: 0; min-width: 155px; }
+    .fcard-tariff { font-size: 11px; color: #888; display: block; margin-bottom: 3px; }
+    .fcard-price-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .fcard-price-amount {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a1a2c;
+      line-height: 1;
+    }
+    .fcard-chevron-right {
+      font-size: 18px;
+      color: #bbb;
+      flex-shrink: 0;
+    }
+    .fcard-price-total {
+      font-size: 11px;
+      color: #888;
+      margin-top: 3px;
+    }
+    .fcard-price-cuotas {
+      font-size: 11px;
+      color: #aaa;
+      margin-top: 1px;
+    }
+    .fcard-policy {
+      font-size: 11px;
+      color: #e74c3c;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+    .fcard-policy-icon {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1.5px solid #e74c3c;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      color: #e74c3c;
+      flex-shrink: 0;
+    }
+    /* Airport warning */
+    .fcard-airport-warn {
+      font-size: 10px;
+      color: #e67e22;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      margin-top: 1px;
+    }
+
+    /* ===== Tips banner — imágenes responsivas ===== */
+    .tips-banner {
+      display: block;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .tips-banner img {
+      width: 100%;
+      display: block;
+      border-radius: 12px;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 767px) {
+      .btn-modificar .btn-text { display: none; }
+      /* Filters: never shrink chips */
+      .filters-inner .eva-3-tag,
+      .filters-inner .filter-chip-active { flex-shrink: 0; }
+      /* Card: stack price below */
+      .fcard-body { flex-wrap: wrap; }
+      .fcard-vdiv { display: none; }
+      .fcard-price-block {
+        width: 100%;
+        padding-top: 10px;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .fcard-time-big { font-size: 20px; }
+      .fcard-dur-center { padding: 0 6px; font-size: 11px; }
+    }
+  </style>
+</head>
+<body class="eva-3-">
+
+  <!-- ==================== SEARCH HEADER ==================== -->
+  <header class="search-header">
+    <div class="eva-3-container">
+      <div class="search-header-inner">
+        <div class="search-summary">
+          <img src="https://media.staticontent.com/media/pictures/f7cdda6b-2225-4d5d-9b11-fc1ce4f99a7c"
+             alt="Despegar" height="28" style="display:block;flex-shrink:0;" />
+          <span style="width:1px;height:28px;background:rgba(255,255,255,0.25);flex-shrink:0;"></span>
+          <span class="search-summary-route">Buenos Aires → Mendoza</span>
+          <div class="search-summary-details">
+            <span class="search-summary-detail">
+              <i class="eva-3-icon-calendar" style="font-size:13px; color:rgba(255,255,255,0.6);"></i>
+              20 oct – 25 oct
+            </span>
+            <span class="search-summary-detail">
+              <i class="eva-3-icon-passengers" style="font-size:13px; color:rgba(255,255,255,0.6);"></i>
+              2 adultos
+            </span>
+            <span class="search-summary-detail">
+              <i class="eva-3-icon-flights" style="font-size:13px; color:rgba(255,255,255,0.6);"></i>
+              Ida y vuelta
+            </span>
+          </div>
+        </div>
+        <button class="eva-3-btn -white -md btn-modificar">
+          <i class="eva-3-icon-search btn-icon"></i>
+          <em class="btn-text">Modificar búsqueda</em>
+        </button>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <main>
+    <div class="eva-3-container">
+      <div class="results-container">
+
+        <!-- Filtros (movidos aquí) -->
+        <div class="filters-inline">
+          <div class="filters-inner">
+            <span class="eva-3-tag -icon">
+              <span class="tag-text">Ordenar</span>
+              <i class="tag-icon eva-3-icon-chevron-down"></i>
+            </span>
+            <span class="eva-3-tag">
+              <span class="tag-text">Directos</span>
+            </span>
+            <span class="eva-3-tag">
+              <span class="tag-text">Con valijas</span>
+            </span>
+            <span class="eva-3-tag -icon">
+              <span class="tag-text">Aerolínea</span>
+              <i class="tag-icon eva-3-icon-chevron-down"></i>
+            </span>
+            <span class="eva-3-tag -icon">
+              <span class="tag-text">Cabina</span>
+              <i class="tag-icon eva-3-icon-chevron-down"></i>
+            </span>
+            <span class="filter-chip-active">
+              Horario de ida 06:00–14:00
+              <button class="filter-chip-remove" aria-label="Eliminar filtro">×</button>
+            </span>
+          </div>
+        </div>
+
+        <!-- Results header -->
+        <div class="results-header">
+          <span class="results-count"><strong>12 vuelos</strong> encontrados</span>
+        </div>
+
+        <!-- ===== CARD 1: Flybondi — Directo — Recomendado ===== -->
+        <div class="fcard">
+          <div class="fcard-badge">★ Recomendado</div>
+          <div class="fcard-top">
+            <div class="fcard-airline-wrap">
+              <div class="fcard-logo">FB</div>
+              <span class="fcard-airline-name">Flybondi</span>
+              <span class="eva-3-driver -secondary"><span class="driver-text">Directo</span></span>
+              <span class="eva-3-driver -benefits"><span class="driver-text">Mejor duración</span></span>
+            </div>
+            <span class="fcard-detail-link">Detalle <span class="fcard-detail-info">i</span></span>
+          </div>
+          <div class="fcard-sep"></div>
+          <div class="fcard-body">
+            <div class="fcard-flights">
+              <!-- IDA -->
+              <div class="fcard-leg-row">
+                <div class="fcard-tgroup">
+                  <div class="fcard-time-big">06:00</div>
+                  <div class="fcard-airport-code">EZE</div>
+                </div>
+                <div class="fcard-dur-center">
+                  <div>1h 59m</div>
+                  <div class="fcard-stops-text -direct">Sin escalas</div>
+                </div>
+                <div class="fcard-tgroup" style="text-align:right;">
+                  <div class="fcard-time-big">07:59</div>
+                  <div class="fcard-airport-code">MDZ</div>
+                </div>
+              </div>
+              <!-- VUELTA -->
+              <div class="fcard-leg-row">
+                <div class="fcard-tgroup">
+                  <div class="fcard-time-big">08:54</div>
+                  <div class="fcard-airport-code">MDZ</div>
+                </div>
+                <div class="fcard-dur-center">
+                  <div>1h 39m</div>
+                  <div class="fcard-stops-text -direct">Sin escalas</div>
+                </div>
+                <div class="fcard-tgroup" style="text-align:right;">
+                  <div class="fcard-time-big">10:33</div>
+                  <div class="fcard-airport-code">EZE</div>
+                </div>
+              </div>
+              <!-- Equipaje -->
+              <div class="fcard-baggage-row">
+                <span class="fcard-bag-item -included">
+                  <i class="eva-3-icon -backpack fcard-bag-ico"></i> Mochila
+                </span>
+                <span class="fcard-bag-item">
+                  <i class="eva-3-icon -handbag fcard-bag-ico"></i> Hand bag
+                </span>
+                <span class="fcard-bag-item -included">
+                  <i class="eva-3-icon -suitecase fcard-bag-ico"></i> 1 maleta (23 kg)
+                </span>
+              </div>
+            </div>
+            <div class="fcard-vdiv"></div>
+            <div class="fcard-price-block">
+              <span class="fcard-tariff">Precio por persona</span>
+              <div class="fcard-price-row">
+                <span class="fcard-price-amount">$ 334.953</span>
+                <span class="fcard-chevron-right">›</span>
+              </div>
+              <div class="fcard-price-total">Total 2 personas $669.906</div>
+              <div class="fcard-price-cuotas">Hasta 12 cuotas</div>
+            </div>
+          </div>
+        </div><!-- /card 1 -->
+
+
+        <!-- ===== CARD 2: Aerolíneas Argentinas — Fuera de política ===== -->
+        <div class="fcard">
+          <div class="fcard-top">
+            <div class="fcard-airline-wrap">
+              <div class="fcard-logo -ar">AR</div>
+              <span class="fcard-airline-name">Aerolíneas Argentinas</span>
+              <span class="eva-3-driver -urgent"><span class="driver-text">¡Solo 4 asientos!</span></span>
+            </div>
+            <span class="fcard-detail-link">Detalle <span class="fcard-detail-info">i</span></span>
+          </div>
+          <div class="fcard-sep"></div>
+          <div class="fcard-body">
+            <div class="fcard-flights">
+              <!-- IDA -->
+              <div class="fcard-leg-row">
+                <div class="fcard-tgroup">
+                  <div class="fcard-time-big">14:20</div>
+                  <div class="fcard-airport-code">EZE</div>
+                </div>
+                <div class="fcard-dur-center">
+                  <div>2h 00m</div>
+                  <div class="fcard-stops-text -direct">Sin escalas</div>
+                </div>
+                <div class="fcard-tgroup" style="text-align:right;">
+                  <div class="fcard-time-big">16:20</div>
+                  <div class="fcard-airport-code">MDZ</div>
+                </div>
+              </div>
+              <!-- VUELTA -->
+              <div class="fcard-leg-row">
+                <div class="fcard-tgroup">
+                  <div class="fcard-time-big">10:40</div>
+                  <div class="fcard-airport-code">MDZ</div>
+                </div>
+                <div class="fcard-dur-center">
+                  <div>6h 30m</div>
+                  <div class="fcard-stops-text -layover">1 escala (COR)</div>
+                </div>
+                <div class="fcard-tgroup" style="text-align:right;">
+                  <div class="fcard-time-big">17:10</div>
+                  <div class="fcard-airport-code">AEP</div>
+                  <div class="fcard-airport-warn"><i class="eva-3-icon-location" style="font-size:10px;"></i> aeropuerto diferente</div>
+                </div>
+              </div>
+              <!-- Equipaje -->
+              <div class="fcard-baggage-row">
+                <span class="fcard-bag-item -included">
+                  <i class="eva-3-icon -backpack fcard-bag-ico"></i> Mochila
+                </span>
+                <span class="fcard-bag-item">
+                  <i class="eva-3-icon -handbag fcard-bag-ico"></i> Hand bag
+                </span>
+                <span class="fcard-bag-item">
+                  <i class="eva-3-icon -suitecase fcard-bag-ico"></i> Sin maleta
+                </span>
+              </div>
+            </div>
+            <div class="fcard-vdiv"></div>
+            <div class="fcard-price-block">
+              <span class="fcard-tariff">Con Galicia MC</span>
+              <div class="fcard-price-row">
+                <span class="fcard-price-amount">$ 249.652</span>
+                <span class="fcard-chevron-right">›</span>
+              </div>
+              <div class="fcard-price-total">Total 2 personas $499.304</div>
+              <div class="fcard-price-cuotas">Hasta 12 cuotas</div>
+              <div class="fcard-policy"><span>!</span> Fuera de política</div>
+            </div>
+          </div>
+        </div><!-- /card 2 -->
+
+
+        <!-- ===== BANNER TIPS ===== -->
+        <a class="tips-banner">
+          <picture>
+            <source media="(min-width: 1024px)" srcset="banner-desktop.png">
+            <source media="(min-width: 768px)" srcset="banner-tablet.png">
+            <img src="banner-mobile.png" alt="Consejos para tu viaje a Mendoza">
+          </picture>
+        </a>
+
+
+        <!-- ===== CARD 3: Flybondi — Urgencia — Sale de AEP ===== -->
+        <div class="fcard">
+          <div class="fcard-top">
+            <div class="fcard-airline-wrap">
+              <div class="fcard-logo">FB</div>
+              <span class="fcard-airline-name">Flybondi</span>
+              <span class="eva-3-driver -secondary"><span class="driver-text">Directo</span></span>
+              <span class="eva-3-driver -urgent"><span class="driver-text">¡Solo 2 asientos!</span></span>
+            </div>
+            <span class="fcard-detail-link">Detalle <span class="fcard-detail-info">i</span></span>
+          </div>
+          <div class="fcard-sep"></div>
+          <div class="fcard-body">
+            <div class="fcard-flights">
+              <!-- IDA -->
+              <div class="fcard-leg-row">
+                <div class="fcard-tgroup">
+                  <div class="fcard-time-big">12:25</div>
+                  <div class="fcard-airport-code">AEP</div>
+                  <div class="fcard-airport-warn"><i class="eva-3-icon-location" style="font-size:10px;"></i> aeropuerto diferente</div>
+                </div>
+                <div class="fcard-dur-center">
+                  <div>1h 59m</div>
+                  <div class="fcard-stops-text -direct">Sin escalas</div>
+                </div>
+                <div class="fcard-tgroup" style="text-align:right;">
+                  <div class="fcard-time-big">14:24</div>
+                  <div class="fcard-airport-code">MDZ</div>
+                </div>
+              </div>
+              <!-- VUELTA -->
+              <div class="fcard-leg-row">
+                <div class="fcard-tgroup">
+                  <div class="fcard-time-big">17:05</div>
+                  <div class="fcard-airport-code">MDZ</div>
+                </div>
+                <div class="fcard-dur-center">
+                  <div>1h 45m</div>
+                  <div class="fcard-stops-text -direct">Sin escalas</div>
+                </div>
+                <div class="fcard-tgroup" style="text-align:right;">
+                  <div class="fcard-time-big">18:50</div>
+                  <div class="fcard-airport-code">AEP</div>
+                </div>
+              </div>
+              <!-- Equipaje -->
+              <div class="fcard-baggage-row">
+                <span class="fcard-bag-item -included">
+                  <i class="eva-3-icon -backpack fcard-bag-ico"></i> Mochila
+                </span>
+                <span class="fcard-bag-item">
+                  <i class="eva-3-icon -handbag fcard-bag-ico"></i> Hand bag
+                </span>
+                <span class="fcard-bag-item -included">
+                  <i class="eva-3-icon -suitecase fcard-bag-ico"></i> 1 maleta (23 kg)
+                </span>
+              </div>
+            </div>
+            <div class="fcard-vdiv"></div>
+            <div class="fcard-price-block">
+              <span class="fcard-tariff">Precio por persona</span>
+              <div class="fcard-price-row">
+                <span class="fcard-price-amount">$ 334.953</span>
+                <span class="fcard-chevron-right">›</span>
+              </div>
+              <div class="fcard-price-total">Total 2 personas $669.906</div>
+              <div class="fcard-price-cuotas">Hasta 12 cuotas</div>
+              <div class="fcard-policy" style="color:#e67e22;">¡Últimos 2 asientos!</div>
+            </div>
+          </div>
+        </div><!-- /card 3 -->
+
+      </div><!-- /results-container -->
+    </div><!-- /container -->
+  </main>
+
+</body>
+</html>
