@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Vuelos — Buenos Aires → Mendoza</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:     #323439;
+      --ink-2:   #565A60;
+      --ink-3:   #72777F;
+      --border:  #DDE1E8;
+      --border-l:#ECEEF2;
+      --bg:      #FFFFFF;
+      --surface: #F7F8F9;
+      --accent:  #4300D2;
+      --success: #028574;
+      --font: 'Rubik', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+      --r-sm: 6px; --r-md: 8px; --r-lg: 12px; --r-full: 9999px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: var(--font); background: #fff; color: var(--ink); -webkit-font-smoothing: antialiased; }
+    button { font-family: var(--font); cursor: pointer; border: none; background: none; padding: 0; }
+
+    @media (min-width: 500px) {
+      body { background: #F2F2F2; }
+      .shell { max-width: 430px; margin: 0 auto; background: #fff; min-height: 100vh; box-shadow: 0 0 0 1px rgba(0,0,0,.06), 0 4px 40px rgba(0,0,0,.10); }
+    }
+
+    /* ── HEADER ── */
+    .hd {
+      background: #fff; border-bottom: 1px solid var(--border);
+      padding: 52px 16px 12px; position: sticky; top: 0; z-index: 200;
+    }
+    .hd-pill {
+      display: flex; align-items: center; gap: 10px;
+      border: 1.5px solid var(--border); border-radius: var(--r-full);
+      padding: 10px 16px; cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,.07);
+    }
+    .hd-ico { font-size: 14px; color: var(--ink-3); }
+    .hd-txt { flex: 1; min-width: 0; }
+    .hd-route { font-size: 15px; font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 5px; }
+    .hd-sep { color: var(--ink-3); font-weight: 400; }
+    .hd-meta { font-size: 11px; color: var(--ink-3); margin-top: 2px; }
+    .hd-divider { width: 1px; height: 22px; background: var(--border); }
+    .hd-adj { font-size: 11px; font-weight: 500; color: var(--ink-2); white-space: nowrap; }
+
+    /* ── FILTERS ── */
+    .filters { background: #fff; border-bottom: 1px solid var(--border); padding: 10px 0; position: sticky; top: 82px; z-index: 199; }
+    .filters-row { display: flex; gap: 8px; padding: 0 16px; overflow-x: auto; scrollbar-width: none; }
+    .filters-row::-webkit-scrollbar { display: none; }
+    .chip {
+      display: inline-flex; align-items: center;
+      padding: 6px 14px; border-radius: var(--r-full);
+      border: 1.5px solid var(--border); background: #fff;
+      color: var(--ink); font-size: 12px; font-weight: 500;
+      white-space: nowrap; flex-shrink: 0; transition: all .15s;
+    }
+    .chip.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+    .chip:active { transform: scale(.93); }
+
+    /* ── META ── */
+    .meta { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 8px; }
+    .meta-count { font-size: 13px; color: var(--ink-3); }
+    .meta-count strong { color: var(--ink); font-weight: 600; }
+    .meta-sort {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 12px; font-weight: 500; color: var(--ink);
+      border: 1.5px solid var(--border); padding: 5px 12px; border-radius: var(--r-full);
+    }
+
+    /* ── LIST ── */
+    .list { display: flex; flex-direction: column; padding: 0 0 140px; }
+    .card-div { width: 100%; height: 8px; background: #F2F4F5; flex-shrink: 0; }
+
+    /* ── CARD ── */
+    .fc {
+      padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;
+      cursor: pointer;
+      opacity: 0; transform: translateY(12px);
+      transition: opacity .4s ease, transform .45s cubic-bezier(.34,1.56,.64,1), background .15s;
+    }
+    .fc.in { opacity: 1; transform: translateY(0); }
+    .fc:active { background: var(--surface); }
+
+    /* ── Airline row ── */
+    .al-row { display: flex; align-items: center; justify-content: space-between; }
+    .al-left { display: flex; align-items: center; gap: 8px; }
+    .logo { width: 30px; height: 30px; border-radius: 7px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-l); }
+    .logo svg { display: block; width: 30px; height: 30px; }
+    .al-name { font-size: 13px; font-weight: 500; color: var(--ink); }
+    .al-sub  { font-size: 10px; color: var(--ink-3); margin-top: 1px; }
+    .al-right { display: flex; align-items: center; gap: 6px; }
+    .tag-spon { font-size: 9px; font-weight: 500; letter-spacing: .2px; color: var(--ink-3); border: 1px solid var(--border); padding: 2px 7px; border-radius: var(--r-full); }
+    .cart-btn {
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid var(--border); color: var(--ink-3);
+      transition: transform .2s cubic-bezier(.34,1.56,.64,1), color .15s, border-color .15s;
+    }
+    .cart-btn:active { transform: scale(1.3); }
+    .cart-btn.on { color: var(--ink); border-color: var(--ink); }
+
+    /* ── Trip block ── */
+    .trip { display: flex; flex-direction: column; gap: 5px; }
+    .trip-hd { display: flex; align-items: center; gap: 6px; }
+    .trip-logo { width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-l); }
+    .trip-logo img { display: block; width: 24px; height: 24px; object-fit: cover; }
+    .trip-lbl { font-size: 11px; font-weight: 500; color: var(--ink); }
+    .trip-date { font-size: 11px; color: var(--ink-3); }
+
+    /* Route row: 4-col equidistant grid */
+    .trip-row {
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .tri-dep, .tri-arr { display: flex; flex-direction: column; }
+    .tri-apt  { font-size: 10px; font-weight: 400; color: var(--ink-3); letter-spacing: .02em; }
+    .tri-time { font-size: 16px; font-weight: 600; color: var(--ink); line-height: 1.15; letter-spacing: -.2px; font-variant-numeric: tabular-nums; }
+    .tri-time.late { color: #8A1004; }
+    .tri-info { display: flex; flex-direction: column; }
+    .tri-stops { font-size: 10px; font-weight: 500; color: var(--ink); white-space: nowrap; }
+    .tri-dur   { font-size: 10px; font-weight: 400; color: var(--ink-3); white-space: nowrap; }
+    .tri-bags { display: flex; align-items: center; gap: 3px; }
+    .bag-ico svg { display: block; }
+    .bag-ico.ok svg { fill: var(--ink); }
+    .bag-ico.no svg { fill: var(--border); }
+
+    /* ── Dividers ── */
+    .idiv { height: 1px; background: var(--border-l); }
+
+    /* ── Policies ── */
+    .policies { display: flex; flex-direction: column; gap: 2px; }
+    .pol { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 400; }
+    .pol.ok { color: var(--success); }
+    .pol.no { color: var(--ink-3); }
+    .pol-ico { font-size: 11px; font-weight: 600; width: 12px; }
+
+    /* ── Bank ── */
+    .bank-row { display: flex; align-items: center; gap: 6px; }
+    .bank-lbl { font-size: 11px; color: var(--ink-2); }
+    .bank-tag { display: inline-flex; align-items: center; gap: 3px; border: 1px solid var(--border); border-radius: var(--r-full); padding: 2px 8px; font-size: 10px; font-weight: 500; color: var(--ink); }
+
+    /* ── Price footer ── */
+    .pf { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
+    .pf-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .pb-lbl  { font-size: 10px; color: var(--ink-3); margin-bottom: 1px; }
+    .pb-orig { font-size: 11px; color: var(--ink-3); text-decoration: line-through; }
+    .pb-price { font-size: 22px; font-weight: 600; color: var(--ink); line-height: 1.1; letter-spacing: -.4px; font-variant-numeric: tabular-nums; }
+    .pb-curr  { font-size: 14px; font-weight: 500; }
+    .pb-save  { font-size: 10px; color: var(--ink-2); margin-top: 2px; }
+    .pb-inst  { font-size: 10px; color: var(--accent); margin-top: 2px; }
+    .btn-cta {
+      background: var(--ink); color: #fff; border-radius: var(--r-lg);
+      padding: 11px 20px; font-size: 13px; font-weight: 500;
+      white-space: nowrap; flex-shrink: 0;
+      transition: transform .18s cubic-bezier(.34,1.56,.64,1), background .15s;
+    }
+    .btn-cta:active { transform: scale(.9); background: #444; }
+
+    /* ── TIPS ── */
+    .tips { padding: 16px; border-top: 1px solid var(--border); }
+    .tips-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .tips-ttl { font-size: 15px; font-weight: 600; color: var(--ink); }
+    .tips-more { font-size: 12px; font-weight: 500; color: var(--accent); text-decoration: underline; cursor: pointer; }
+    .tips-row { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+    .tips-row::-webkit-scrollbar { display: none; }
+    .tc { min-width: 148px; max-width: 148px; border: 1.5px solid var(--border); border-radius: var(--r-lg); padding: 12px; cursor: pointer; flex-shrink: 0; background: #fff; transition: transform .2s; }
+    .tc:active { transform: scale(.95); }
+    .tc-emo  { font-size: 18px; margin-bottom: 7px; }
+    .tc-pill { font-size: 9px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase; color: var(--ink-3); margin-bottom: 3px; }
+    .tc-ttl  { font-size: 12px; font-weight: 500; color: var(--ink); margin-bottom: 3px; line-height: 1.2; }
+    .tc-body { font-size: 10px; color: var(--ink-3); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+    /* ── FAB ── */
+    .fab {
+      position: fixed; bottom: 32px; right: 32px; z-index: 300;
+      width: 56px; height: 56px; border-radius: 50%; overflow: hidden; padding: 0;
+      box-shadow: 0 4px 18px rgba(0,0,0,.28);
+      opacity: 0; transform: translateY(60px);
+      transition: opacity .3s ease, transform .45s cubic-bezier(.34,1.56,.64,1);
+      cursor: pointer; border: none; background: none;
+    }
+    .fab.in { opacity: 1; transform: translateY(0); }
+    .fab:active { transform: scale(.88); }
+    .fab img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    @media (min-width: 500px) {
+      /* shell right edge = 50% + 215px from left = 50% - 215px from right; FAB 32px inside */
+      .fab { right: calc(50% - 215px + 32px); }
+    }
+
+    /* ── BOTTOM SHEET ── */
+    .bs-overlay { position: fixed; inset: 0; z-index: 400; background: rgba(0,0,0,.38); opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+    .bs-overlay.in { opacity: 1; pointer-events: all; }
+    .bs { position: fixed; bottom: 0; left: 0; right: 0; z-index: 401; background: #fff; border-radius: 20px 20px 0 0; max-height: 86vh; overflow-y: auto; transform: translateY(100%); transition: transform .38s cubic-bezier(.32,.72,0,1); padding-bottom: env(safe-area-inset-bottom, 24px); }
+    .bs.in { transform: translateY(0); }
+    @media (min-width: 500px) {
+      .bs { max-width: 430px; left: 50%; right: auto; width: 100%; transform: translateX(-50%) translateY(100%); }
+      .bs.in { transform: translateX(-50%) translateY(0); }
+    }
+    .bs-handle { width: 36px; height: 4px; background: var(--border); border-radius: var(--r-full); margin: 12px auto 14px; }
+    .bs-title { font-size: 17px; font-weight: 600; color: var(--ink); padding: 0 20px 12px; border-bottom: 1px solid var(--border); }
+    .td { display: flex; gap: 12px; align-items: flex-start; padding: 14px 20px; border-bottom: 1px solid var(--border); }
+    .td-e { font-size: 20px; flex-shrink: 0; line-height: 1; }
+    .td-t { font-size: 13px; font-weight: 500; color: var(--ink); margin-bottom: 3px; }
+    .td-b { font-size: 12px; color: var(--ink-2); line-height: 1.5; }
+    .td-a { display: inline-block; margin-top: 6px; font-size: 11px; font-weight: 600; color: var(--accent); text-decoration: underline; cursor: pointer; }
+  </style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="hd">
+    <div class="hd-pill">
+      <span class="hd-ico">✈</span>
+      <div class="hd-txt">
+        <div class="hd-route"><span>Buenos Aires</span><span class="hd-sep">→</span><span>Mendoza</span></div>
+        <div class="hd-meta">20–25 oct · 2 adultos · Economy</div>
+      </div>
+      <div class="hd-divider"></div>
+      <span class="hd-adj">✎ Editar</span>
+    </div>
+  </header>
+
+  <nav class="filters">
+    <div class="filters-row">
+      <button class="chip on"  onclick="toggleChip(this)">Recomendados</button>
+      <button class="chip"     onclick="toggleChip(this)">Directo</button>
+      <button class="chip"     onclick="toggleChip(this)">Precio ↑</button>
+      <button class="chip"     onclick="toggleChip(this)">Mañana</button>
+      <button class="chip"     onclick="toggleChip(this)">Con equipaje</button>
+      <button class="chip"     onclick="toggleChip(this)">Aerolínea</button>
+      <button class="chip"     onclick="toggleChip(this)">Cuotas</button>
+    </div>
+  </nav>
+
+  <div class="meta">
+    <span class="meta-count"><strong>12 vuelos</strong> disponibles</span>
+    <button class="meta-sort">↑↓ Ordenar</button>
+  </div>
+
+  <main class="list">
+
+    <!-- ═══ CARD 1 ═══ -->
+    <article class="fc" onclick="pickCard(this)">
+      <div class="trip">
+        <div class="trip-hd"><div class="trip-logo"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRt6MGyxT5YRUnB3qxKM77H4N7FJlWBOyiBdYpBrD_kiLV8jFDCK6ZLGX9v&s=10" alt="Flybondi"></div><span class="trip-lbl">Ida</span><span class="trip-date">lun 20 oct</span></div>
+        <div class="trip-row">
+          <div class="tri-dep"><div class="tri-apt">EZE</div><div class="tri-time">06:00</div></div>
+          <div class="tri-arr"><div class="tri-apt">MDZ</div><div class="tri-time">07:59</div></div>
+          <div class="tri-info"><span class="tri-stops">Directo</span><span class="tri-dur">1h 59m</span></div>
+          <div class="tri-bags">
+            <span class="bag-ico ok"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 8h-3V6a5 5 0 0 0-10 0v2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM9 6a3 3 0 0 1 6 0v2H9V6z"/></svg></span>
+            <span class="bag-ico ok"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M17 6h-2V5a3 3 0 0 0-6 0v1H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM11 5a1 1 0 0 1 2 0v1h-2V5zm6 15H7V8h10v12z"/></svg></span>
+            <span class="bag-ico no"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1a3 3 0 0 0-6 0c0 .12.11.56.18 1H10V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V8a2 2 0 0 0-2-2zm-8-1a1 1 0 0 1 2 0c0 .12-.11.56-.18 1h-1.64C12.11 5.56 12 5.12 12 5zm8 14H5V5h3v1H7v10h10V6h-1V5h3v13z"/></svg></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="idiv"></div>
+
+      <div class="trip">
+        <div class="trip-hd"><div class="trip-logo"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRt6MGyxT5YRUnB3qxKM77H4N7FJlWBOyiBdYpBrD_kiLV8jFDCK6ZLGX9v&s=10" alt="Flybondi"></div><span class="trip-lbl">Vuelta</span><span class="trip-date">sáb 25 oct</span></div>
+        <div class="trip-row">
+          <div class="tri-dep"><div class="tri-apt">MDZ</div><div class="tri-time">08:54</div></div>
+          <div class="tri-arr"><div class="tri-apt">EZE</div><div class="tri-time">10:33</div></div>
+          <div class="tri-info"><span class="tri-stops">Directo</span><span class="tri-dur">1h 39m</span></div>
+          <div class="tri-bags">
+            <span class="bag-ico ok"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 8h-3V6a5 5 0 0 0-10 0v2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM9 6a3 3 0 0 1 6 0v2H9V6z"/></svg></span>
+            <span class="bag-ico ok"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M17 6h-2V5a3 3 0 0 0-6 0v1H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM11 5a1 1 0 0 1 2 0v1h-2V5zm6 15H7V8h10v12z"/></svg></span>
+            <span class="bag-ico no"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1a3 3 0 0 0-6 0c0 .12.11.56.18 1H10V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V8a2 2 0 0 0-2-2zm-8-1a1 1 0 0 1 2 0c0 .12-.11.56-.18 1h-1.64C12.11 5.56 12 5.12 12 5zm8 14H5V5h3v1H7v10h10V6h-1V5h3v13z"/></svg></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="idiv"></div>
+      <div class="policies">
+        <div class="pol ok"><span class="pol-ico">✓</span> Cambios con cargo</div>
+        <div class="pol no"><span class="pol-ico">✗</span> Sin reembolso</div>
+      </div>
+      <div class="pf">
+        <div class="pb"><div class="pb-lbl">2 personas · precio final</div><div class="pb-price"><span class="pb-curr">$</span>669.906</div><div class="pb-inst">Hasta 12 cuotas</div></div>
+        <div class="pf-actions">
+          <button class="cart-btn" onclick="tapCart(event,this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></button>
+          <button class="btn-cta">Seleccionar</button>
+        </div>
+      </div>
+    </article>
+    <div class="card-div"></div>
+
+    <!-- ═══ CARD 2 ═══ -->
+    <article class="fc" onclick="pickCard(this)">
+      <div class="trip">
+        <div class="trip-hd"><div class="trip-logo"><img src="https://foroalfa.org/imagenes/ilustraciones/535.jpg" alt="Aerolíneas Argentinas"></div><span class="trip-lbl">Ida</span><span class="trip-date">lun 20 oct</span></div>
+        <div class="trip-row">
+          <div class="tri-dep"><div class="tri-apt">EZE</div><div class="tri-time">14:20</div></div>
+          <div class="tri-arr"><div class="tri-apt">MDZ</div><div class="tri-time">16:20</div></div>
+          <div class="tri-info"><span class="tri-stops">Directo</span><span class="tri-dur">2h 00m</span></div>
+          <div class="tri-bags">
+            <span class="bag-ico ok"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 8h-3V6a5 5 0 0 0-10 0v2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM9 6a3 3 0 0 1 6 0v2H9V6z"/></svg></span>
+            <span class="bag-ico no"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M17 6h-2V5a3 3 0 0 0-6 0v1H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM11 5a1 1 0 0 1 2 0v1h-2V5zm6 15H7V8h10v12z"/></svg></span>
+            <span class="bag-ico no"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1a3 3 0 0 0-6 0c0 .12.11.56.18 1H10V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V8a2 2 0 0 0-2-2zm-8-1a1 1 0 0 1 2 0c0 .12-.11.56-.18 1h-1.64C12.11 5.56 12 5.12 12 5zm8 14H5V5h3v1H7v10h10V6h-1V5h3v13z"/></svg></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="idiv"></div>
+
+      <div class="trip">
+        <div class="trip-hd"><div class="trip-logo"><img src="https://foroalfa.org/imagenes/ilustraciones/535.jpg" alt="Aerolíneas Argentinas"></div><span class="trip-lbl">Vuelta</span><span class="trip-date">sáb 25 oct</span></div>
+        <div class="trip-row">
+          <div class="tri-dep"><div class="tri-apt">MDZ</div><div class="tri-time">10:40</div></div>
+          <div class="tri-arr"><div class="tri-apt">AEP</div><div class="tri-time late">17:10<sup style="font-size:9px">+1</sup></div></div>
+          <div class="tri-info"><span class="tri-stops">1 escala · COR</span><span class="tri-dur">6h 30m</span></div>
+          <div class="tri-bags">
+            <span class="bag-ico ok"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 8h-3V6a5 5 0 0 0-10 0v2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM9 6a3 3 0 0 1 6 0v2H9V6z"/></svg></span>
+            <span class="bag-ico no"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M17 6h-2V5a3 3 0 0 0-6 0v1H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM11 5a1 1 0 0 1 2 0v1h-2V5zm6 15H7V8h10v12z"/></svg></span>
+            <span class="bag-ico no"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1a3 3 0 0 0-6 0c0 .12.11.56.18 1H10V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V8a2 2 0 0 0-2-2zm-8-1a1 1 0 0 1 2 0c0 .12-.11.56-.18 1h-1.64C12.11 5.56 12 5.12 12 5zm8 14H5V5h3v1H7v10h10V6h-1V5h3v13z"/></svg></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="idiv"></div>
+      <div class="policies">
+        <div class="pol ok"><span class="pol-ico">✓</span> Cambios sin cargo</div>
+        <div class="pol no"><span class="pol-ico">✗</span> Sin reembolso</div>
+      </div>
+      <div class="pf">
+        <div class="pb"><div class="pb-orig">$ 504.348</div><div class="pb-lbl">2 personas · precio final</div><div class="pb-price"><span class="pb-curr">$</span>499.304</div><div class="pb-save">Ahorrás $ 5.043</div><div class="pb-inst">Hasta 6 cuotas</div></div>
+        <div class="pf-actions">
+          <button class="cart-btn" onclick="tapCart(event,this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></button>
+          <button class="btn-cta">Seleccionar</button>
+        </div>
+      </div>
+    </article>
+    <div class="card-div"></div>
+
+    <!-- ═══ CARD 3 ═══ -->
+    <article class="fc" onclick="pickCard(this)">
+      <div class="trip">
+        <div class="trip-hd"><div class="trip-logo"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRt6MGyxT5YRUnB3qxKM77H4N7FJlWBOyiBdYpBrD_kiLV8jFDCK6ZLGX9v&s=10" alt="Flybondi"></div><span class="trip-lbl">Ida</span><span class="trip-date">lun 20 oct</span></div>
+        <div class="trip-row">
+          <div class="tri-dep"><div class="tri-apt">AEP</div><div class="tri-time">12:25</div></div>
+          <div class="tri-arr"><div class="tri-apt">MDZ</div><div class="tri-time">14:24</div></div>
+          <div class="tri-info"><span class="tri-stops">Directo</span><span class="tri-dur">1h 59m</span></div>
+          <div class="tri-bags">
+            <span class="bag-ico ok"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 8h-3V6a5 5 0 0 0-10 0v2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM9 6a3 3 0 0 1 6 0v2H9V6z"/></svg></span>
+            <span class="bag-ico ok"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M17 6h-2V5a3 3 0 0 0-6 0v1H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM11 5a1 1 0 0 1 2 0v1h-2V5zm6 15H7V8h10v12z"/></svg></span>
+            <span class="bag-ico no"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1a3 3 0 0 0-6 0c0 .12.11.56.18 1H10V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V8a2 2 0 0 0-2-2zm-8-1a1 1 0 0 1 2 0c0 .12-.11.56-.18 1h-1.64C12.11 5.56 12 5.12 12 5zm8 14H5V5h3v1H7v10h10V6h-1V5h3v13z"/></svg></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="idiv"></div>
+
+      <div class="trip">
+        <div class="trip-hd"><div class="trip-logo"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRt6MGyxT5YRUnB3qxKM77H4N7FJlWBOyiBdYpBrD_kiLV8jFDCK6ZLGX9v&s=10" alt="Flybondi"></div><span class="trip-lbl">Vuelta</span><span class="trip-date">sáb 25 oct</span></div>
+        <div class="trip-row">
+          <div class="tri-dep"><div class="tri-apt">MDZ</div><div class="tri-time">08:54</div></div>
+          <div class="tri-arr"><div class="tri-apt">EZE</div><div class="tri-time">10:33</div></div>
+          <div class="tri-info"><span class="tri-stops">Directo</span><span class="tri-dur">1h 39m</span></div>
+          <div class="tri-bags">
+            <span class="bag-ico ok"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 8h-3V6a5 5 0 0 0-10 0v2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM9 6a3 3 0 0 1 6 0v2H9V6z"/></svg></span>
+            <span class="bag-ico ok"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M17 6h-2V5a3 3 0 0 0-6 0v1H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM11 5a1 1 0 0 1 2 0v1h-2V5zm6 15H7V8h10v12z"/></svg></span>
+            <span class="bag-ico no"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1a3 3 0 0 0-6 0c0 .12.11.56.18 1H10V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V8a2 2 0 0 0-2-2zm-8-1a1 1 0 0 1 2 0c0 .12-.11.56-.18 1h-1.64C12.11 5.56 12 5.12 12 5zm8 14H5V5h3v1H7v10h10V6h-1V5h3v13z"/></svg></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="idiv"></div>
+      <div class="policies">
+        <div class="pol ok"><span class="pol-ico">✓</span> Cambios con cargo</div>
+        <div class="pol no"><span class="pol-ico">✗</span> Sin reembolso</div>
+      </div>
+      <div class="pf">
+        <div class="pb"><div class="pb-lbl">2 personas · precio final</div><div class="pb-price"><span class="pb-curr">$</span>669.906</div><div class="pb-inst">Hasta 12 cuotas</div></div>
+        <div class="pf-actions">
+          <button class="cart-btn" onclick="tapCart(event,this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></button>
+          <button class="btn-cta">Seleccionar</button>
+        </div>
+      </div>
+    </article>
+    <div class="card-div"></div>
+
+    <!-- ═══ CARD 4 ═══ -->
+    <article class="fc" onclick="pickCard(this)">
+      <div class="trip">
+        <div class="trip-hd"><div class="trip-logo"><img src="https://foroalfa.org/imagenes/ilustraciones/535.jpg" alt="Aerolíneas Argentinas"></div><span class="trip-lbl">Ida</span><span class="trip-date">lun 20 oct</span></div>
+        <div class="trip-row">
+          <div class="tri-dep"><div class="tri-apt">AEP</div><div class="tri-time">06:05</div></div>
+          <div class="tri-arr"><div class="tri-apt">MDZ</div><div class="tri-time">08:05</div></div>
+          <div class="tri-info"><span class="tri-stops">Directo</span><span class="tri-dur">2h 00m</span></div>
+          <div class="tri-bags">
+            <span class="bag-ico ok"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 8h-3V6a5 5 0 0 0-10 0v2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM9 6a3 3 0 0 1 6 0v2H9V6z"/></svg></span>
+            <span class="bag-ico no"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M17 6h-2V5a3 3 0 0 0-6 0v1H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM11 5a1 1 0 0 1 2 0v1h-2V5zm6 15H7V8h10v12z"/></svg></span>
+            <span class="bag-ico no"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1a3 3 0 0 0-6 0c0 .12.11.56.18 1H10V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V8a2 2 0 0 0-2-2zm-8-1a1 1 0 0 1 2 0c0 .12-.11.56-.18 1h-1.64C12.11 5.56 12 5.12 12 5zm8 14H5V5h3v1H7v10h10V6h-1V5h3v13z"/></svg></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="idiv"></div>
+
+      <div class="trip">
+        <div class="trip-hd"><div class="trip-logo"><img src="https://foroalfa.org/imagenes/ilustraciones/535.jpg" alt="Aerolíneas Argentinas"></div><span class="trip-lbl">Vuelta</span><span class="trip-date">sáb 25 oct</span></div>
+        <div class="trip-row">
+          <div class="tri-dep"><div class="tri-apt">MDZ</div><div class="tri-time">07:30</div></div>
+          <div class="tri-arr"><div class="tri-apt">AEP</div><div class="tri-time">09:10</div></div>
+          <div class="tri-info"><span class="tri-stops">Directo</span><span class="tri-dur">1h 40m</span></div>
+          <div class="tri-bags">
+            <span class="bag-ico ok"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 8h-3V6a5 5 0 0 0-10 0v2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM9 6a3 3 0 0 1 6 0v2H9V6z"/></svg></span>
+            <span class="bag-ico no"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M17 6h-2V5a3 3 0 0 0-6 0v1H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM11 5a1 1 0 0 1 2 0v1h-2V5zm6 15H7V8h10v12z"/></svg></span>
+            <span class="bag-ico no"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1a3 3 0 0 0-6 0c0 .12.11.56.18 1H10V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V8a2 2 0 0 0-2-2zm-8-1a1 1 0 0 1 2 0c0 .12-.11.56-.18 1h-1.64C12.11 5.56 12 5.12 12 5zm8 14H5V5h3v1H7v10h10V6h-1V5h3v13z"/></svg></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="idiv"></div>
+      <div class="policies">
+        <div class="pol ok"><span class="pol-ico">✓</span> Cambios sin cargo</div>
+        <div class="pol no"><span class="pol-ico">✗</span> Sin reembolso</div>
+      </div>
+      <div class="pf">
+        <div class="pb"><div class="pb-orig">$ 692.703</div><div class="pb-lbl">2 personas · precio final</div><div class="pb-price"><span class="pb-curr">$</span>685.776</div><div class="pb-save">Ahorrás $ 6.927</div><div class="pb-inst">Hasta 6 cuotas</div></div>
+        <div class="pf-actions">
+          <button class="cart-btn" onclick="tapCart(event,this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></button>
+          <button class="btn-cta">Seleccionar</button>
+        </div>
+      </div>
+    </article>
+    <div class="card-div"></div>
+
+    <!-- ═══ CARD 5 ═══ -->
+    <article class="fc" onclick="pickCard(this)">
+      <div class="trip">
+        <div class="trip-hd"><div class="trip-logo"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRt6MGyxT5YRUnB3qxKM77H4N7FJlWBOyiBdYpBrD_kiLV8jFDCK6ZLGX9v&s=10" alt="Flybondi"></div><span class="trip-lbl">Ida</span><span class="trip-date">lun 20 oct</span></div>
+        <div class="trip-row">
+          <div class="tri-dep"><div class="tri-apt">AEP</div><div class="tri-time">16:41</div></div>
+          <div class="tri-arr"><div class="tri-apt">MDZ</div><div class="tri-time">18:40</div></div>
+          <div class="tri-info"><span class="tri-stops">Directo</span><span class="tri-dur">1h 59m</span></div>
+          <div class="tri-bags">
+            <span class="bag-ico ok"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 8h-3V6a5 5 0 0 0-10 0v2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM9 6a3 3 0 0 1 6 0v2H9V6z"/></svg></span>
+            <span class="bag-ico ok"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M17 6h-2V5a3 3 0 0 0-6 0v1H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM11 5a1 1 0 0 1 2 0v1h-2V5zm6 15H7V8h10v12z"/></svg></span>
+            <span class="bag-ico ok"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1a3 3 0 0 0-6 0c0 .12.11.56.18 1H10V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V8a2 2 0 0 0-2-2zm-8-1a1 1 0 0 1 2 0c0 .12-.11.56-.18 1h-1.64C12.11 5.56 12 5.12 12 5zm8 14H5V5h3v1H7v10h10V6h-1V5h3v13z"/></svg></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="idiv"></div>
+
+      <div class="trip">
+        <div class="trip-hd"><div class="trip-logo"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRt6MGyxT5YRUnB3qxKM77H4N7FJlWBOyiBdYpBrD_kiLV8jFDCK6ZLGX9v&s=10" alt="Flybondi"></div><span class="trip-lbl">Vuelta</span><span class="trip-date">sáb 25 oct</span></div>
+        <div class="trip-row">
+          <div class="tri-dep"><div class="tri-apt">MDZ</div><div class="tri-time">08:54</div></div>
+          <div class="tri-arr"><div class="tri-apt">EZE</div><div class="tri-time">10:33</div></div>
+          <div class="tri-info"><span class="tri-stops">Directo</span><span class="tri-dur">1h 39m</span></div>
+          <div class="tri-bags">
+            <span class="bag-ico ok"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 8h-3V6a5 5 0 0 0-10 0v2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM9 6a3 3 0 0 1 6 0v2H9V6z"/></svg></span>
+            <span class="bag-ico ok"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M17 6h-2V5a3 3 0 0 0-6 0v1H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM11 5a1 1 0 0 1 2 0v1h-2V5zm6 15H7V8h10v12z"/></svg></span>
+            <span class="bag-ico ok"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1a3 3 0 0 0-6 0c0 .12.11.56.18 1H10V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V8a2 2 0 0 0-2-2zm-8-1a1 1 0 0 1 2 0c0 .12-.11.56-.18 1h-1.64C12.11 5.56 12 5.12 12 5zm8 14H5V5h3v1H7v10h10V6h-1V5h3v13z"/></svg></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="idiv"></div>
+      <div class="policies">
+        <div class="pol ok"><span class="pol-ico">✓</span> Cambios con cargo</div>
+        <div class="pol no"><span class="pol-ico">✗</span> Sin reembolso</div>
+      </div>
+      <div class="pf">
+        <div class="pb"><div class="pb-lbl">2 personas · precio final</div><div class="pb-price"><span class="pb-curr">$</span>704.406</div><div class="pb-inst">Hasta 12 cuotas</div></div>
+        <div class="pf-actions">
+          <button class="cart-btn" onclick="tapCart(event,this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></button>
+          <button class="btn-cta">Seleccionar</button>
+        </div>
+      </div>
+    </article>
+
+    <!-- TIPS -->
+    <div class="tips">
+      <div class="tips-hd"><span class="tips-ttl">Para tu viaje</span><span class="tips-more" onclick="openBS()">Ver todo</span></div>
+      <div class="tips-row">
+        <div class="tc" onclick="openBS()"><div class="tc-emo">🤖</div><div class="tc-pill">SOFIA</div><div class="tc-ttl">¿No encontrás tu vuelo?</div><div class="tc-body">4 de 10 viajeros encuentran su vuelo ideal hablando con SOFIA.</div></div>
+        <div class="tc" onclick="openBS()"><div class="tc-emo">📅</div><div class="tc-pill">Precio</div><div class="tc-ttl">El mes más barato</div><div class="tc-body">¡Tus fechas son las mejores! Mayo también es ideal.</div></div>
+        <div class="tc" onclick="openBS()"><div class="tc-emo">💳</div><div class="tc-pill">Cuotas</div><div class="tc-ttl">Pagá sin interés</div><div class="tc-body">Con Brubank, hasta 12 cuotas sin interés en vuelos nacionales.</div></div>
+        <div class="tc" onclick="openBS()"><div class="tc-emo">🌤️</div><div class="tc-pill">Clima</div><div class="tc-ttl">15° a 25° en octubre</div><div class="tc-body">Llevá ropa ligera y una chaqueta para las noches frescas.</div></div>
+        <div class="tc" onclick="openBS()"><div class="tc-emo">🏔️</div><div class="tc-pill">Imperdible</div><div class="tc-ttl">La Cordillera</div><div class="tc-body">Paisajes únicos perfectos para fotos que no olvidarás.</div></div>
+      </div>
+    </div>
+
+  </main>
+
+  <button class="fab" id="fab" onclick="openBS()"><img src="https://media.staticontent.com/media/pictures/175d84fa-936b-484f-ab8c-da02828cb289?op=TRUNCATE" alt="SOFIA"></button>
+
+  <div class="bs-overlay" id="bsOv" onclick="closeBS()"></div>
+  <div class="bs" id="bs">
+    <div class="bs-handle"></div>
+    <div class="bs-title">Para tu viaje</div>
+    <div class="td"><div class="td-e">🤖</div><div><div class="td-t">¿No encontrás tu vuelo?</div><div class="td-b">4 de 10 viajeros encuentran más rápido su vuelo ideal en el chat con SOFIA.</div><div class="td-a">Ir a chatear →</div></div></div>
+    <div class="td"><div class="td-e">📅</div><div><div class="td-t">El mes más barato</div><div class="td-b">¡Felicidades! Tus fechas son las mejores para viajar. Considera mayo como un mes ideal para explorar Mendoza.</div><div class="td-a">Buscar fecha más barata →</div></div></div>
+    <div class="td"><div class="td-e">💳</div><div><div class="td-t">Aprovechá las cuotas</div><div class="td-b">Con Banco Brubank, hasta 12 cuotas sin interés en vuelos nacionales.</div><div class="td-a">Ver promociones →</div></div></div>
+    <div class="td"><div class="td-e">🌤️</div><div><div class="td-t">Clima en tu destino</div><div class="td-b">En Mendoza en octubre las temperaturas oscilan entre 15°C y 25°C.</div></div></div>
+    <div class="td"><div class="td-e">🏔️</div><div><div class="td-t">No te perdás la Cordillera</div><div class="td-b">Sus paisajes son impresionantes y perfectos para fotos inolvidables.</div></div></div>
+    <div class="td"><div class="td-e">🍷</div><div><div class="td-t">Mendoza te espera</div><div class="td-b">Viñedos, montañas y gastronomía exquisita. ¡Una experiencia inolvidable!</div></div></div>
+  </div>
+
+</div>
+<script>
+  function boot() {
+    document.querySelectorAll('.fc').forEach((c,i) => setTimeout(() => c.classList.add('in'), 50+i*100));
+    setTimeout(() => document.getElementById('fab').classList.add('in'), 900);
+  }
+  document.readyState==='loading' ? document.addEventListener('DOMContentLoaded',boot) : boot();
+  function toggleChip(el) { el.classList.toggle('on'); }
+  function tapCart(e,btn) { e.stopPropagation(); btn.classList.toggle('on'); btn.style.transform='scale(1.35)'; setTimeout(()=>btn.style.transform='',220); }
+  function pickCard() {}
+  function openBS() { document.getElementById('bsOv').classList.add('in'); document.getElementById('bs').classList.add('in'); document.body.style.overflow='hidden'; }
+  function closeBS() { document.getElementById('bsOv').classList.remove('in'); document.getElementById('bs').classList.remove('in'); document.body.style.overflow=''; }
+  let _sy=0; const bs=document.getElementById('bs');
+  bs.addEventListener('touchstart',e=>{_sy=e.touches[0].clientY;},{passive:true});
+  bs.addEventListener('touchend',e=>{if(e.changedTouches[0].clientY-_sy>80)closeBS();},{passive:true});
+</script>
+</body>
+</html>
