@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vuelos BUE → MDZ | Despegar</title>
+  <style>
+    /* ─── EVA UI CSS Custom Properties ─── */
+    :root {
+      --brand-primary-4: #270570;
+      --brand-primary-3: #4300D2;
+      --brand-primary-2: #A780FF;
+      --brand-primary-1: #EBE5F5;
+      --brand-secondary-3: #E61A06;
+      --brand-secondary-1: #FCE8E6;
+
+      --color-neutral-800: #323439;
+      --color-neutral-700: #565A60;
+      --color-neutral-600: #72777F;
+      --color-neutral-400: #C0C4CC;
+      --color-neutral-300: #DDE1E8;
+      --color-neutral-200: #E9ECF1;
+      --color-neutral-100: #F2F4F5;
+      --color-white: #FFFFFF;
+
+      --color-success-900: #01423A;
+      --color-success-500: #028574;
+      --color-success-300: #C9F0ED;
+      --color-success-100: #E6FBFB;
+      --color-error-900: #6E2119;
+      --color-error-500: #CB4032;
+      --color-error-100: #FEEDEC;
+      --color-warning-500: #C87203;
+      --color-warning-300: #FDDDB4;
+      --color-warning-100: #FEF4E6;
+
+      /* Spacing — escala de 4px */
+      --sp-1: 4px;
+      --sp-2: 8px;
+      --sp-3: 12px;
+      --sp-4: 16px;
+      --sp-5: 20px;
+      --sp-6: 24px;
+      --sp-8: 32px;
+
+      /* Border radius */
+      --r-sm: 4px;
+      --r-md: 8px;
+      --r-lg: 12px;
+      --r-xl: 16px;
+      --r-2xl: 24px;
+
+      /* Shadows (EVA line / line-hover / static) */
+      --shadow-line: 0 1px 2px rgba(0,0,0,0.06), 0 0 0 1px var(--color-neutral-300);
+      --shadow-line-hover: 0 4px 16px rgba(0,0,0,0.10), 0 0 0 1px var(--color-neutral-300);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--color-neutral-100);
+      color: var(--color-neutral-800);
+      font-size: 14px;
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Typography (EVA classes) ─── */
+    .eva-3-h1 { font-size: 28px; font-weight: 700; line-height: 1.2; }
+    .eva-3-h4 { font-size: 16px; font-weight: 700; line-height: 1.3; }
+    .eva-3-h5 { font-size: 14px; font-weight: 600; line-height: 1.4; }
+    .eva-3-h6 { font-size: 12px; font-weight: 600; line-height: 1.4; }
+    .eva-3-subtitle-s { font-size: 12px; font-weight: 500; }
+    .eva-3-body-s { font-size: 12px; font-weight: 400; line-height: 1.5; }
+
+    /* ─── Grid / Container ─── */
+    .eva-3-container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 var(--sp-4);
+    }
+
+    /* ─── Header ─── */
+    .page-header {
+      background: var(--brand-primary-4);
+      padding: var(--sp-3) 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-4);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      color: var(--color-white);
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      text-decoration: none;
+      line-height: 1;
+    }
+
+    .logo-icon {
+      width: 30px;
+      height: 30px;
+      flex-shrink: 0;
+    }
+
+    /* ─── Search bar ─── */
+    .search-bar {
+      background: var(--color-white);
+      border-bottom: 1px solid var(--color-neutral-300);
+      padding: var(--sp-3) 0;
+    }
+
+    .search-inner {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      flex-wrap: wrap;
+    }
+
+    .search-route {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .search-sep { color: var(--color-neutral-600); }
+
+    .search-meta {
+      font-size: 13px;
+      color: var(--color-neutral-600);
+    }
+
+    .btn-edit {
+      margin-left: auto;
+      border: 1.5px solid var(--brand-primary-3);
+      color: var(--brand-primary-3);
+      background: transparent;
+      border-radius: var(--r-2xl);
+      padding: var(--sp-1) var(--sp-3);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-edit:hover { background: var(--brand-primary-1); }
+
+    /* ─── Main ─── */
+    .page-body { padding: var(--sp-5) 0 var(--sp-8); }
+
+    .results-header {
+      display: flex;
+      align-items: baseline;
+      gap: var(--sp-2);
+      margin-bottom: var(--sp-4);
+    }
+
+    .results-count {
+      font-size: 13px;
+      color: var(--color-neutral-600);
+    }
+
+    /* ─── Flight Card ─── */
+    .flight-card {
+      background: var(--color-white);
+      border-radius: var(--r-2xl);
+      box-shadow: var(--shadow-line);
+      margin-bottom: var(--sp-3);
+      overflow: hidden;
+      cursor: pointer;
+      transition: box-shadow 0.2s ease, transform 0.15s ease;
+    }
+
+    .flight-card:hover { box-shadow: var(--shadow-line-hover); transform: translateY(-1px); }
+    .flight-card:active { transform: scale(0.995); }
+
+    /* Suggested card — gray outline */
+    .flight-card.-suggested {
+      box-shadow: none;
+      border: 1.5px solid var(--color-neutral-400);
+    }
+
+    .flight-card.-suggested:hover {
+      box-shadow: var(--shadow-line-hover);
+      border-color: var(--color-neutral-400);
+    }
+
+    /* Suggested top tag */
+    .suggested-tag {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-neutral-600);
+      background: var(--color-neutral-100);
+      border-bottom: 1px solid var(--color-neutral-200);
+      padding: 5px var(--sp-3);
+    }
+
+    /* Card top badge (sponsored / promo) */
+    .card-top-badge {
+      padding: var(--sp-2) var(--sp-3);
+      border-bottom: 1px solid var(--color-neutral-200);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      background: var(--color-neutral-100);
+    }
+
+    .badge-promoted {
+      font-size: 11px;
+      color: var(--color-neutral-600);
+      font-weight: 500;
+    }
+
+    .badge-promo-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--brand-primary-1);
+      color: var(--brand-primary-3);
+      border-radius: var(--r-2xl);
+      padding: 2px var(--sp-2);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* Card body — compact */
+    .card-body { padding: var(--sp-3) var(--sp-3) var(--sp-2); }
+
+    /* ─── Flight Leg ─── */
+    .flight-leg {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: var(--sp-3);
+      align-items: center;
+    }
+
+    .airline-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--r-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .leg-content { display: flex; align-items: center; gap: var(--sp-3); }
+
+    .time-block { text-align: center; flex-shrink: 0; }
+
+    .time-hour {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--color-neutral-800);
+    }
+
+    .time-airport {
+      font-size: 11px;
+      color: var(--color-neutral-600);
+      margin-top: 2px;
+    }
+
+    .time-airport.-alt {
+      color: var(--color-warning-500);
+      font-weight: 600;
+    }
+
+    .leg-timeline {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .leg-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+    }
+
+    .meta-duration {
+      font-size: 11px;
+      color: var(--color-neutral-600);
+      font-weight: 500;
+    }
+
+    .meta-stops {
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .meta-stops.-direct { color: var(--color-success-500); }
+    .meta-stops.-stop { color: var(--color-neutral-700); }
+
+    .timeline-track {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: 0;
+    }
+
+    .t-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      border: 1.5px solid var(--color-neutral-400);
+      flex-shrink: 0;
+    }
+
+    .t-line {
+      flex: 1;
+      height: 1px;
+      background: var(--color-neutral-400);
+      position: relative;
+    }
+
+    .t-stop-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--color-neutral-600);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* Leg separator */
+    .leg-separator {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      margin: var(--sp-2) 0 var(--sp-2) 44px;
+    }
+
+    .sep-line { flex: 1; height: 1px; background: var(--color-neutral-200); }
+    .sep-label { font-size: 10px; color: var(--color-neutral-600); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Seats alert */
+    .seats-warning {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-error-500);
+      background: var(--color-error-100);
+      border-radius: var(--r-sm);
+      padding: 2px var(--sp-2);
+      margin-left: 44px;
+      margin-top: var(--sp-1);
+    }
+
+    /* Alt times */
+    .alt-times {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      margin-left: 44px;
+      margin-top: var(--sp-2);
+      flex-wrap: wrap;
+    }
+
+    .alt-label { font-size: 11px; color: var(--color-neutral-600); }
+
+    .alt-btn {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--brand-primary-3);
+      background: var(--brand-primary-1);
+      border: none;
+      border-radius: var(--r-2xl);
+      padding: 2px var(--sp-2);
+      cursor: pointer;
+    }
+
+    /* ─── Card Divider ─── */
+    .card-divider { height: 1px; background: var(--color-neutral-200); margin: 0 var(--sp-3); }
+
+    /* ─── Card Footer — compact ─── */
+    .card-footer {
+      padding: var(--sp-2) var(--sp-3) var(--sp-3);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: var(--sp-4);
+    }
+
+    .footer-left { display: flex; flex-direction: column; gap: 5px; }
+
+    .baggage-row {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      flex-wrap: wrap;
+    }
+
+    .bag-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--color-neutral-700);
+    }
+
+    .bag-item.-off {
+      color: var(--color-neutral-400);
+      text-decoration: line-through;
+    }
+
+    .loyalty-line {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--color-neutral-600);
+    }
+
+    .stay-line {
+      font-size: 11px;
+      color: var(--color-neutral-600);
+    }
+
+    /* ─── Price Box ─── */
+    .price-box {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: var(--sp-1);
+      flex-shrink: 0;
+    }
+
+    .price-discount-chip {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-success-900);
+      background: var(--color-success-100);
+      border-radius: var(--r-sm);
+      padding: 2px var(--sp-2);
+    }
+
+    .price-original {
+      font-size: 12px;
+      color: var(--color-neutral-600);
+      text-decoration: line-through;
+    }
+
+    .price-main {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--color-neutral-800);
+      line-height: 1;
+    }
+
+    .price-sub {
+      font-size: 11px;
+      color: var(--color-neutral-600);
+    }
+
+    .price-bank {
+      font-size: 11px;
+      color: var(--color-neutral-700);
+      font-weight: 500;
+    }
+
+    /* ─── CTA Button (EVA contained, large) ─── */
+    .eva-3-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      border-radius: var(--r-2xl);
+      padding: 10px var(--sp-5);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      white-space: nowrap;
+      margin-top: var(--sp-2);
+    }
+
+    .eva-3-btn.-primary {
+      background: var(--brand-primary-3);
+      color: var(--color-white);
+    }
+
+    .eva-3-btn.-primary:hover { background: var(--brand-primary-4); }
+
+    /* ─── Travel Sage Tips Card — compact ─── */
+    .tips-card {
+      background: var(--color-white);
+      border-radius: var(--r-2xl);
+      box-shadow: var(--shadow-line);
+      padding: var(--sp-3);
+      margin-bottom: var(--sp-3);
+    }
+
+    .tips-header {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      margin-bottom: var(--sp-2);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-neutral-800);
+    }
+
+    .tips-pills {
+      display: flex;
+      gap: var(--sp-2);
+      overflow-x: auto;
+      padding-bottom: var(--sp-1);
+      scrollbar-width: none;
+    }
+
+    .tips-pills::-webkit-scrollbar { display: none; }
+
+    .tip-pill {
+      flex-shrink: 0;
+      border: 1.5px solid var(--color-neutral-300);
+      border-radius: var(--r-2xl);
+      padding: 3px var(--sp-3);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-neutral-700);
+      background: var(--color-white);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .tip-pill:hover { border-color: var(--brand-primary-3); color: var(--brand-primary-3); background: var(--brand-primary-1); }
+    .tip-pill.-active { border-color: var(--brand-primary-3); color: var(--brand-primary-3); background: var(--brand-primary-1); }
+
+    .tip-content {
+      margin-top: var(--sp-2);
+      background: var(--color-neutral-100);
+      border-radius: var(--r-md);
+      padding: var(--sp-2) var(--sp-3);
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .tip-content-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--color-neutral-800);
+      margin-bottom: 2px;
+    }
+
+    .tip-content-body {
+      font-size: 12px;
+      color: var(--color-neutral-700);
+      line-height: 1.4;
+    }
+
+    .tip-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: var(--sp-1);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--brand-primary-3);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 767px) {
+      .btn-edit { display: none; }
+
+      .time-hour { font-size: 17px; }
+      .price-main { font-size: 20px; }
+
+      .card-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--sp-3);
+      }
+
+      .price-box {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: var(--sp-2);
+      }
+
+      .eva-3-btn.-primary {
+        width: 100%;
+        padding: 12px;
+        font-size: 15px;
+        margin-top: var(--sp-1);
+      }
+
+      .leg-separator { margin-left: var(--sp-3); }
+      .seats-warning { margin-left: var(--sp-3); }
+      .alt-times { margin-left: var(--sp-3); }
+    }
+
+    @media (min-width: 768px) {
+      .leg-content { gap: var(--sp-4); }
+      .time-hour { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── Header ─── -->
+<header class="page-header">
+  <div class="eva-3-container">
+    <div class="header-inner">
+      <a class="logo" href="#">
+        <!-- Despegar D mark -->
+        <svg class="logo-icon" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M6 3h9C21.075 3 26 8.372 26 15C26 21.628 21.075 27 15 27H6V3Z" fill="white"/>
+          <rect x="6" y="3" width="4" height="24" fill="white"/>
+        </svg>
+        despegar
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ─── Search Summary Bar ─── -->
+<div class="search-bar">
+  <div class="eva-3-container">
+    <div class="search-inner">
+      <div class="search-route">
+        <span>Buenos Aires</span>
+        <span class="search-sep">⇄</span>
+        <span>Mendoza</span>
+      </div>
+      <span class="search-meta">20 oct – 25 oct, 2026 · 2 adultos · Economy</span>
+      <button class="btn-edit">Editar búsqueda</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Main Content ─── -->
+<main class="page-body">
+  <div class="eva-3-container">
+    <div class="results-header">
+      <h1 class="eva-3-h4">Resultados</h1>
+      <span class="results-count" id="results-count"></span>
+    </div>
+    <div id="flights-list"></div>
+  </div>
+</main>
+
+<script>
+/* ──────────────────────────────────────────────
+   DATA — extraída del flights.json
+   ────────────────────────────────────────────── */
+const FLIGHTS = [
+  {
+    id: 1,
+    suggested: true,
+    promoted: false,
+    airlines: { out: { code: 'FO', name: 'Flybondi', bg: '#FF5F00', fg: '#fff' }, ret: { code: 'FO', name: 'Flybondi', bg: '#FF5F00', fg: '#fff' } },
+    out: {
+      depAirport: 'EZE', depTime: '06:00', depDiff: false,
+      arrAirport: 'MDZ', arrTime: '07:59', arrDiff: false,
+      duration: '1h 59m', stops: 0, seats: 20,
+      alternatives: []
+    },
+    ret: {
+      depAirport: 'MDZ', depTime: '08:54', depDiff: false,
+      arrAirport: 'EZE', arrTime: '10:33', arrDiff: false,
+      duration: '1h 39m', stops: 0, seats: 7,
+      alternatives: []
+    },
+    price: '$ 669.906', pricePer: '$ 334.953 c/u', priceRaw: 669906,
+    priceOrig: null, discount: null,
+    installments: 12, bank: 'Galicia Eminent / ICBC',
+    baggage: { backpack: true, carryOn: false, checked: 1 },
+    loyalty: 43, stayDays: 5
+  },
+  {
+    id: 2,
+    promoted: true,
+    promoLabel: 'D Viaje! · Galicia MasterCard',
+    airlines: { out: { code: 'AR', name: 'Aerolíneas', bg: '#74B1E8', fg: '#001489' }, ret: { code: 'AR', name: 'Aerolíneas', bg: '#74B1E8', fg: '#001489' } },
+    out: {
+      depAirport: 'EZE', depTime: '14:20', depDiff: true,
+      arrAirport: 'MDZ', arrTime: '16:20', arrDiff: false,
+      duration: '2h 00m', stops: 0, seats: 4,
+      alternatives: []
+    },
+    ret: {
+      depAirport: 'MDZ', depTime: '10:40', depDiff: false,
+      arrAirport: 'AEP', arrTime: '17:10', arrDiff: true,
+      duration: '6h 30m', stops: 1, stopCity: 'COR', waitTime: '4h 05m', seats: 9,
+      alternatives: []
+    },
+    price: '$ 499.304', pricePer: '$ 252.174 c/u', priceRaw: 499304,
+    priceOrig: '$ 504.348', discount: 'Ahorrá $ 5.043',
+    installments: 6, bank: 'Galicia MasterCard',
+    baggage: { backpack: true, carryOn: false, checked: 0 },
+    loyalty: 33, stayDays: 4,
+    frequentFlyer: '¡Podés sumar puntos Aerolíneas Plus!'
+  },
+  {
+    id: 3,
+    promoted: false,
+    airlines: { out: { code: 'FO', name: 'Flybondi', bg: '#FF5F00', fg: '#fff' }, ret: { code: 'FO', name: 'Flybondi', bg: '#FF5F00', fg: '#fff' } },
+    out: {
+      depAirport: 'AEP', depTime: '12:25', depDiff: true,
+      arrAirport: 'MDZ', arrTime: '14:24', arrDiff: false,
+      duration: '1h 59m', stops: 0, seats: 2,
+      alternatives: [{ depTime: '19:43', arrTime: '21:42', seats: 25 }]
+    },
+    ret: {
+      depAirport: 'MDZ', depTime: '08:54', depDiff: false,
+      arrAirport: 'EZE', arrTime: '10:33', arrDiff: true,
+      duration: '1h 39m', stops: 0, seats: 7,
+      alternatives: []
+    },
+    price: '$ 669.906', pricePer: '$ 334.953 c/u', priceRaw: 669906,
+    priceOrig: null, discount: null,
+    installments: 12, bank: 'Galicia Eminent / ICBC',
+    baggage: { backpack: true, carryOn: false, checked: 1 },
+    loyalty: 43, stayDays: 4
+  }
+];
+
+const TIPS = [
+  { pill: 'SOFIA', title: '¿No encontrás tu vuelo?', body: '4 de 10 viajeros encuentran más rápido su vuelo ideal en el chat con SOFIA.', cta: 'Ir a chatear con SOFIA' },
+  { pill: 'Mes más barato', title: 'El mes más barato', body: '¡Felicidades! Tus fechas solicitadas son las mejores para viajar. Considerá mayo como alternativa más económica.', cta: null },
+  { pill: 'Cuotas', title: 'Aprovechá para pagar en cuotas', body: 'Con Banco Brubank, hasta 12 cuotas sin interés en vuelos nacionales.', cta: 'Ver promociones bancarias' },
+  { pill: 'Equipaje', title: 'Equipaje más conveniente', body: 'Para tu vuelo a Mendoza te recomendamos equipaje despachado. Así podés llevar todo lo que necesitás.', cta: null },
+  { pill: 'Clima', title: 'Clima en tu destino', body: 'En Mendoza en octubre las temperaturas oscilan entre 15 °C y 25 °C. Llevá ropa ligera y una chaqueta para las noches.', cta: null },
+  { pill: 'Imperdible', title: 'Qué tenés que conocer', body: 'No te pierdas la Cordillera de los Andes. Sus paisajes son impresionantes y perfectos para fotos inolvidables.', cta: null },
+  { pill: 'Temporada', title: 'Precios en el destino', body: 'En octubre, Mendoza está en temporada media. Los precios son accesibles — probá un asado en el centro.', cta: null },
+  { pill: 'Tu viaje', title: 'Sobre tu viaje', body: 'Mendoza te espera con viñedos, montañas y una gastronomía exquisita. ¡Preparate para una experiencia inolvidable!', cta: null }
+];
+
+/* ──────────────────────────────────────────────
+   SVG ICON HELPERS (EVA UI icon style, stroke-based)
+   ────────────────────────────────────────────── */
+function svgIcon(name, size) {
+  const s = size || 16;
+  const base = `width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="display:inline-block;vertical-align:middle;flex-shrink:0;"`;
+
+  const icons = {
+    backpack: `<svg ${base} stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 6V4.5a2 2 0 0 1 4 0V6"/>
+      <rect x="3" y="6" width="10" height="9" rx="1.5"/>
+      <path d="M5.5 10.5h5"/>
+    </svg>`,
+
+    suitcase: `<svg ${base} stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5.5 5V3.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V5"/>
+      <rect x="2" y="5" width="12" height="9" rx="1.5"/>
+      <line x1="2" y1="9.5" x2="14" y2="9.5"/>
+    </svg>`,
+
+    loyalty: `<svg ${base} stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 2l1.6 3.25 3.6.52-2.6 2.54.61 3.59L8 10.27l-3.21 1.63.61-3.59-2.6-2.54 3.6-.52z"/>
+    </svg>`,
+
+    warning: `<svg ${base} stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 1.5L13.5 13H.5L7 1.5Z"/>
+      <line x1="7" y1="5.5" x2="7" y2="8.5"/>
+      <circle cx="7" cy="10.5" r="0.6" fill="currentColor" stroke="none"/>
+    </svg>`,
+
+    gift: `<svg ${base} stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="6" width="12" height="8" rx="1"/>
+      <line x1="8" y1="6" x2="8" y2="14"/>
+      <path d="M5.5 6C5.5 4.3 6.5 3.5 8 4c1 .33 1.5 1.5 0 2"/>
+      <path d="M10.5 6C10.5 4.3 9.5 3.5 8 4c-1 .33-1.5 1.5 0 2"/>
+    </svg>`
+  };
+
+  return icons[name] || '';
+}
+
+/* ──────────────────────────────────────────────
+   RENDER HELPERS
+   ────────────────────────────────────────────── */
+function airlineBadge(airline) {
+  return `<div class="airline-badge" style="background:${airline.bg}22;color:${airline.fg === '#fff' ? airline.bg : airline.fg};">
+    ${airline.code}
+  </div>`;
+}
+
+function renderLeg(leg, airline, direction) {
+  const stopsDot = leg.stops > 0 ? `<div class="t-stop-dot"></div>` : '';
+  const stopsClass = leg.stops === 0 ? '-direct' : '-stop';
+  const stopsLabel = leg.stops === 0 ? 'Directo' : `${leg.stops} escala${leg.stops > 1 ? 's' : ''}${leg.stopCity ? ' en ' + leg.stopCity : ''}`;
+
+  const seatsWarning = leg.seats <= 5
+    ? `<div class="seats-warning">${svgIcon('warning', 13)} Solo quedan ${leg.seats} asientos</div>`
+    : '';
+
+  const altsHtml = leg.alternatives && leg.alternatives.length > 0
+    ? `<div class="alt-times">
+        <span class="alt-label">Otro horario:</span>
+        ${leg.alternatives.map(a =>
+          `<button class="alt-btn" onclick="selectAlt(event,'${a.depTime}','${a.arrTime}')">${a.depTime} – ${a.arrTime} <span style="font-size:10px;opacity:.7;">(${a.seats} asientos)</span></button>`
+        ).join('')}
+      </div>`
+    : '';
+
+  const diffNote = (leg.depDiff || leg.arrDiff)
+    ? `<div style="margin-left:44px;margin-top:var(--sp-1);font-size:11px;color:var(--color-warning-500);font-weight:600;display:flex;align-items:center;gap:4px;">${svgIcon('warning', 13)} Aeropuerto diferente al de búsqueda</div>`
+    : '';
+
+  return `
+    <div class="flight-leg">
+      ${airlineBadge(airline)}
+      <div class="leg-content">
+        <div class="time-block">
+          <div class="time-hour">${leg.depTime}</div>
+          <div class="time-airport${leg.depDiff ? ' -alt' : ''}">${leg.depAirport}</div>
+        </div>
+
+        <div class="leg-timeline">
+          <div class="leg-meta">
+            <span class="meta-duration">${leg.duration}</span>
+            <span class="meta-stops ${stopsClass}">${stopsLabel}</span>
+          </div>
+          <div class="timeline-track">
+            <div class="t-dot"></div>
+            <div class="t-line">${stopsDot}</div>
+            <div class="t-dot"></div>
+          </div>
+        </div>
+
+        <div class="time-block">
+          <div class="time-hour">${leg.arrTime}</div>
+          <div class="time-airport${leg.arrDiff ? ' -alt' : ''}">${leg.arrAirport}</div>
+        </div>
+      </div>
+    </div>
+    ${diffNote}
+    ${seatsWarning}
+    ${altsHtml}
+  `;
+}
+
+function renderBaggage(b) {
+  return `<div class="baggage-row">
+    <span class="bag-item">${svgIcon('backpack')} Mochila</span>
+    ${b.checked > 0
+      ? `<span class="bag-item">${svgIcon('suitcase')} 1 valija 23 kg</span>`
+      : `<span class="bag-item -off">${svgIcon('suitcase')} Sin valija</span>`
+    }
+    ${b.carryOn
+      ? `<span class="bag-item">${svgIcon('suitcase')} Carry-on</span>`
+      : ``
+    }
+  </div>`;
+}
+
+function renderFlightCard(f) {
+  const suggestedTag = f.suggested
+    ? `<div class="suggested-tag">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="flex-shrink:0;">
+          <circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M3.5 6l1.8 1.8L8.5 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Sugerido
+      </div>`
+    : '';
+
+  const topBadge = f.promoted ? `
+    <div class="card-top-badge">
+      <span class="badge-promoted">Promocionado</span>
+      ${f.promoLabel ? `<span class="badge-promo-pill">${svgIcon('gift', 12)} ${f.promoLabel}</span>` : ''}
+    </div>` : '';
+
+  const discountChip = f.discount
+    ? `<div class="price-discount-chip">${f.discount}</div>` : '';
+
+  const origPrice = f.priceOrig
+    ? `<div class="price-original">${f.priceOrig}</div>` : '';
+
+  const loyaltyLine = f.frequentFlyer
+    ? `<div class="loyalty-line">${svgIcon('loyalty')} ${f.frequentFlyer}</div>`
+    : f.loyalty
+    ? `<div class="loyalty-line">${svgIcon('loyalty')} Sumás ${f.loyalty} pts Club Despegar</div>`
+    : '';
+
+  return `
+    <article class="flight-card${f.suggested ? ' -suggested' : ''}" onclick="openFlight(${f.id})" role="button" aria-label="Seleccionar vuelo ${f.id}">
+      ${suggestedTag}
+      ${topBadge}
+      <div class="card-body">
+        ${renderLeg(f.out, f.airlines.out, 'Ida')}
+
+        <div class="leg-separator">
+          <div class="sep-line"></div>
+          <span class="sep-label">Regreso · 25 oct</span>
+          <div class="sep-line"></div>
+        </div>
+
+        ${renderLeg(f.ret, f.airlines.ret, 'Vuelta')}
+      </div>
+
+      <div class="card-divider"></div>
+
+      <div class="card-footer">
+        <div class="footer-left">
+          ${renderBaggage(f.baggage)}
+          ${loyaltyLine}
+          <div class="stay-line">Disfrutá ${f.stayDays} días en Mendoza</div>
+        </div>
+
+        <div class="price-box">
+          ${discountChip}
+          ${origPrice}
+          <div class="price-main">${f.price}</div>
+          <div class="price-sub">2 personas · ${f.pricePer}</div>
+          <div class="price-bank">Hasta ${f.installments} cuotas · ${f.bank}</div>
+          <button class="eva-3-btn -primary" onclick="event.stopPropagation(); openFlight(${f.id})">
+            Seleccionar
+          </button>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+/* ──────────────────────────────────────────────
+   TIPS CARD
+   ────────────────────────────────────────────── */
+let activeTip = 0;
+
+function renderTipsCard() {
+  return `
+    <div class="tips-card">
+      <div class="tips-header">Sobre tu viaje a Mendoza</div>
+      <div class="tips-pills" id="tips-pills">
+        ${TIPS.map((t, i) => `
+          <button class="tip-pill${i === 0 ? ' -active' : ''}" onclick="selectTip(${i})">${t.pill}</button>
+        `).join('')}
+      </div>
+      <div class="tip-content" id="tip-content">
+        <div class="tip-content-title">${TIPS[0].title}</div>
+        <div class="tip-content-body">${TIPS[0].body}</div>
+        ${TIPS[0].cta ? `<button class="tip-cta">→ ${TIPS[0].cta}</button>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function selectTip(i) {
+  activeTip = i;
+  document.querySelectorAll('.tip-pill').forEach((el, idx) => {
+    el.classList.toggle('-active', idx === i);
+  });
+  const area = document.getElementById('tip-content');
+  const t = TIPS[i];
+  area.innerHTML = `
+    <div class="tip-content-title">${t.title}</div>
+    <div class="tip-content-body">${t.body}</div>
+    ${t.cta ? `<button class="tip-cta">→ ${t.cta}</button>` : ''}
+  `;
+  area.style.animation = 'none';
+  area.offsetHeight;
+  area.style.animation = '';
+}
+
+/* ──────────────────────────────────────────────
+   ACTIONS
+   ────────────────────────────────────────────── */
+function openFlight(id) {
+  const f = FLIGHTS.find(f => f.id === id);
+  if (!f) return;
+  const msg = `Seleccionaste:\n${f.airlines.out.name} · Ida ${f.out.depAirport} ${f.out.depTime} → ${f.out.arrTime}\nVuelta ${f.ret.depAirport} ${f.ret.depTime} → ${f.ret.arrTime}\n\nPrecio: ${f.price} (2 personas)`;
+  alert(msg);
+}
+
+function selectAlt(event, depTime, arrTime) {
+  event.stopPropagation();
+  alert(`Seleccionaste horario alternativo: ${depTime} – ${arrTime}`);
+}
+
+/* ──────────────────────────────────────────────
+   INIT
+   ────────────────────────────────────────────── */
+function render() {
+  document.getElementById('results-count').textContent = `${FLIGHTS.length} opciones encontradas`;
+
+  const list = document.getElementById('flights-list');
+  list.innerHTML =
+    renderFlightCard(FLIGHTS[0]) +
+    renderTipsCard() +
+    renderFlightCard(FLIGHTS[1]) +
+    renderFlightCard(FLIGHTS[2]);
+}
+
+render();
+</script>
+
+</body>
+</html>
