@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1F0070">
+  <title>Vuelos a Mendoza | Despegar</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --violet: #1F0070;
+      --violet-dark: #170054;
+      --violet-pale: #F2ECFF;
+      --ink: #292833;
+      --muted: #666570;
+      --line: #DAD9DF;
+      --canvas: #F5F4F7;
+      --surface: #ffffff;
+      --green: #147a55;
+      --green-pale: #e8f5ef;
+      --shadow-card: 0 2px 9px rgba(26, 55, 78, .09), 0 1px 2px rgba(26, 55, 78, .06);
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background-color: var(--canvas);
+      background-image: repeating-linear-gradient(135deg, rgba(31, 0, 112, .018) 0 1px, transparent 1px 12px);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    button, select { font: inherit; }
+    button:focus-visible, select:focus-visible, a:focus-visible {
+      outline: 3px solid #f2aa3b;
+      outline-offset: 3px;
+    }
+
+    .site-header {
+      height: 68px;
+      display: flex;
+      align-items: center;
+      background: var(--violet);
+      border-bottom: 1px solid rgba(255,255,255,.2);
+    }
+
+    .header-inner, .page-shell {
+      width: min(100% - 32px, 1120px);
+      margin-inline: auto;
+    }
+
+    .header-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: inline-flex; align-items: center; gap: 8px; color: #FFFFFF; font-size: 21px; font-weight: 800; letter-spacing: 0; text-decoration: none; }
+    .brand-mark { width: 27px; height: 27px; display: grid; place-items: center; color: #FFFFFF; font-size: 24px; font-weight: 850; line-height: 1; }
+    .header-section-nav { height: 100%; display: flex; align-items: stretch; }
+    .header-section { position: relative; min-width: 54px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 5px 7px 6px; color: #FFFFFF; font-size: 11px; font-weight: 750; text-decoration: none; }
+    .header-section::after { position: absolute; right: 2px; bottom: 0; left: 2px; height: 2px; background: #FFFFFF; content: ""; }
+    .header-section-icon { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; color: var(--violet); background: #FFFFFF; font-family: "Apple Symbols", "Segoe UI Symbol", sans-serif; font-size: 17px; line-height: 1; }
+    [hidden] { display: none !important; }
+
+    .search-screen { padding: 12px 0 36px; }
+    .search-hero {
+      overflow: hidden;
+      position: relative;
+      padding: 23px 18px 18px;
+      border-radius: 10px;
+      color: white;
+      background: linear-gradient(135deg, #1F0070 0%, #2D0099 100%);
+      box-shadow: 0 3px 10px rgba(31, 0, 112, .16);
+    }
+    .search-hero-heading { display: block; }
+    .search-hero h1 { margin: 0; font-size: 25px; line-height: 1.15; letter-spacing: 0; }
+    .search-hero-heading p { margin: 7px 0 0; color: #F1EBFF; font-size: 13px; }
+    .search-form { display: grid; gap: 10px; margin-top: 20px; }
+    .search-fields { display: grid; gap: 9px; }
+    .search-field { display: grid; gap: 6px; min-width: 0; color: #FFFFFF; font-size: 14px; font-weight: 750; }
+    .search-input-wrap { position: relative; }
+    .search-input {
+      width: 100%;
+      min-height: 48px;
+      padding: 0 12px;
+      border: 1px solid #D8D6DF;
+      border-radius: 6px;
+      color: var(--ink);
+      background: #F7F7FA;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .search-input::placeholder { color: #71717A; font-weight: 450; }
+    .search-input:focus { border-color: #1F0070; outline: 3px solid rgba(255, 255, 255, .3); background: white; }
+    .route-fields { display: grid; grid-template-columns: minmax(0, 1fr) 42px minmax(0, 1fr); align-items: end; gap: 7px; }
+    .swap-route { width: 42px; height: 48px; display: grid; place-items: center; margin-bottom: 0; border: 1px solid #D8D6DF; border-radius: 6px; color: #1F0070; background: white; box-shadow: 0 2px 6px rgba(22, 12, 48, .16); font-size: 25px; font-weight: 800; line-height: 1; cursor: pointer; }
+    .date-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .search-submit { width: 50%; justify-self: center; min-height: 52px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; margin-top: 2px; border: 0; border-radius: 999px; color: #FFFFFF; background: #E8320A; font-size: 16px; font-weight: 800; cursor: pointer; transition: transform .15s ease, background .15s ease; }
+    .search-submit:hover { background: #D32D0A; }
+    .search-submit:active { transform: translateY(1px); }
+    .search-icon { font-size: 17px; line-height: 1; }
+    .search-assurance { display: flex; align-items: center; gap: 8px; margin: 15px 2px 0; color: #62616C; font-size: 11px; }
+    .assurance-mark { width: 19px; height: 19px; display: grid; place-items: center; border-radius: 50%; color: #147a55; background: #e8f5ef; font-size: 11px; font-weight: 800; }
+
+    main { padding: 19px 0 46px; }
+
+    .search-summary {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      padding: 15px 16px;
+      border-radius: var(--radius);
+      color: white;
+      background: var(--violet);
+      box-shadow: 0 3px 10px rgba(31, 0, 112, .16);
+    }
+
+    .route-line { display: flex; align-items: center; gap: 10px; min-width: 0; font-size: 16px; font-weight: 750; }
+    .route-city { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .route-arrow { flex: 0 0 auto; color: #D2C2FF; font-size: 20px; }
+    .search-meta { margin-top: 4px; color: #F1EBFF; font-size: 12px; }
+    .round-trip { padding: 7px 10px; border: 1px solid rgba(255,255,255,.45); border-radius: 6px; color: white; font-size: 12px; font-weight: 700; white-space: nowrap; }
+
+    .page-heading { margin: 22px 0 14px; }
+    .page-heading h1 { margin: 0; font-size: 23px; line-height: 1.2; letter-spacing: 0; }
+    .page-heading p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+    .edit-search { min-height: 37px; padding: 0 11px; border: 1px solid #D7C8FF; border-radius: 6px; color: #1F0070; background: white; font-size: 12px; font-weight: 750; cursor: pointer; }
+
+    .price-panel {
+      padding: 16px 14px 13px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow-card);
+    }
+
+    .panel-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+    .panel-heading h2 { margin: 0; font-size: 16px; line-height: 1.3; }
+    .panel-heading p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+    .chart-legend { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; margin-top: 2px; color: var(--muted); font-size: 11px; }
+    .legend-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+
+    .chart-scroll { margin-top: 14px; overflow-x: auto; scrollbar-width: thin; }
+    .chart-layout { display: grid; grid-template-columns: 47px minmax(470px, 1fr); gap: 7px; min-width: 525px; }
+    .chart-axis { display: flex; flex-direction: column; justify-content: space-between; height: 151px; padding: 1px 0 21px; color: #75747D; font-size: 10px; text-align: right; }
+    .chart-plot { position: relative; height: 151px; display: flex; flex-direction: column; }
+    .grid-lines { position: absolute; inset: 0 0 21px; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+    .grid-lines span { border-top: 1px dashed #E8E7EB; }
+    .day-list { position: relative; display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 5px; height: 100%; }
+    .day-column { min-width: 0; display: grid; grid-template-rows: 25px minmax(0, 1fr) 21px; align-items: end; text-align: center; }
+    .deal-slot { height: 25px; display: flex; align-items: start; justify-content: center; }
+    .deal-badge { padding: 2px 4px; border-radius: 4px; color: var(--green); background: var(--green-pale); font-size: 9px; font-weight: 800; line-height: 1.2; white-space: nowrap; }
+    .bar-well { height: 100%; display: flex; align-items: end; justify-content: center; border-bottom: 1px solid #D3D2D8; }
+    .price-bar { width: min(68%, 26px); min-height: 2px; border-radius: 5px 5px 0 0; background: #9B7AEA; transition: height .25s ease, background-color .2s ease; }
+    .price-bar.is-cheap { background: var(--green); }
+    .price-bar.is-selected { background: var(--violet); }
+    .day-label { align-self: center; color: #62616C; font-size: 10px; font-weight: 700; }
+    .day-column.is-selected .day-label { color: var(--violet); }
+    .chart-footnote { margin: 8px 0 0; color: #686771; font-size: 11px; }
+
+    .results-toolbar { display: flex; flex-direction: column; gap: 11px; margin: 20px 0 12px; }
+    .results-count { margin: 0; font-size: 16px; font-weight: 750; }
+    .results-count span { color: var(--muted); font-size: 13px; font-weight: 500; }
+    .filters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .filter-field { min-width: 0; display: grid; gap: 4px; color: var(--muted); font-size: 11px; font-weight: 700; }
+    .filter-field select { width: 100%; min-height: 39px; padding: 0 30px 0 10px; border: 1px solid #D3D2D8; border-radius: 6px; color: var(--ink); background: white; font-size: 13px; }
+
+    .flight-list { display: grid; gap: 11px; }
+    .flight-card {
+      overflow: hidden;
+      border: 1px solid #DAD9DF;
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow-card);
+      transition: border-color .18s ease, box-shadow .18s ease;
+    }
+    .flight-card.is-chosen { border-color: var(--violet); box-shadow: 0 0 0 2px rgba(31, 0, 112, .14), var(--shadow-card); }
+    .card-main { padding: 14px; }
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding-bottom: 11px; border-bottom: 1px solid #edf1f4; }
+    .airline { min-width: 0; display: flex; align-items: center; gap: 9px; }
+    .airline-code { width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid #DDD2FB; border-radius: 50%; color: var(--violet-dark); background: var(--violet-pale); font-size: 10px; font-weight: 800; }
+    .airline-name { font-size: 13px; font-weight: 750; line-height: 1.2; }
+    .fare-label { display: inline-block; margin-top: 4px; padding: 2px 6px; border-radius: 4px; color: #596c7d; background: #f0f3f5; font-size: 9px; font-weight: 800; letter-spacing: .3px; }
+    .price-block { flex: 0 0 auto; text-align: right; }
+    .price { color: var(--violet-dark); font-size: 19px; font-weight: 800; line-height: 1.15; white-space: nowrap; }
+    .price-caption { margin-top: 3px; color: var(--muted); font-size: 10px; }
+
+    .legs { display: grid; gap: 0; }
+    .leg { display: grid; grid-template-columns: 40px minmax(0, 1fr); align-items: center; gap: 8px; padding: 11px 0; }
+    .leg + .leg { border-top: 1px solid #edf1f4; }
+    .leg-direction { color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .35px; text-transform: uppercase; }
+    .leg-times { min-width: 0; display: flex; align-items: center; gap: 7px; }
+    .time { font-size: 14px; font-weight: 750; white-space: nowrap; }
+    .route-track { min-width: 22px; flex: 1 1 auto; display: grid; justify-items: center; gap: 2px; color: var(--muted); font-size: 9px; line-height: 1; }
+    .track-line { width: 100%; height: 1px; position: relative; background: #92919A; }
+    .track-line::after { content: ""; position: absolute; top: -2px; right: 0; width: 5px; height: 5px; border-radius: 50%; background: #92919A; }
+    .airport { color: var(--muted); font-size: 10px; font-weight: 650; }
+    .leg-meta { text-align: right; white-space: nowrap; }
+    .leg-duration { font-size: 11px; font-weight: 700; }
+    .leg-stops { margin-top: 2px; color: var(--muted); font-size: 10px; }
+    .leg-stops.is-direct { color: var(--green); }
+
+    .card-bottom { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-top: 10px; border-top: 1px solid #edf1f4; }
+    .bag-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 7px; border-radius: 4px; color: #4C4B55; background: #F2F1F4; font-size: 10px; font-weight: 650; }
+    .bag-chip.included { color: #176347; background: var(--green-pale); }
+    .card-action { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border-top: 1px solid #edf1f4; background: #fbfcfd; }
+    .fare-note { color: var(--muted); font-size: 10px; }
+    .select-button { min-height: 37px; padding: 0 14px; border: 0; border-radius: 6px; color: white; background: var(--violet); font-size: 12px; font-weight: 750; cursor: pointer; transition: background .15s ease, transform .15s ease; }
+    .select-button:hover { background: var(--violet-dark); }
+    .select-button:active { transform: translateY(1px); }
+    .select-button[aria-pressed="true"] { color: var(--violet-dark); background: #EAE2FF; }
+
+    .empty-state { padding: 28px 18px; border: 1px dashed #C9C8CE; border-radius: var(--radius); color: var(--muted); background: white; text-align: center; }
+    .empty-state strong { display: block; margin-bottom: 4px; color: var(--ink); }
+    .page-footer { padding: 22px 0 5px; color: #77767F; font-size: 10px; text-align: center; }
+
+    @media (min-width: 720px) {
+      main { padding-top: 27px; }
+      .search-screen { padding-top: 20px; }
+      .search-hero { max-width: 760px; margin: 24px auto 0; padding: 28px 30px 25px; }
+      .search-hero h1 { font-size: 30px; }
+      .search-form { grid-template-columns: 1fr 1fr; align-items: end; gap: 12px; margin-top: 24px; }
+      .route-fields { grid-column: 1 / -1; grid-template-columns: 1fr 48px 1fr; gap: 12px; }
+      .swap-route { width: 48px; height: 52px; }
+      .date-fields { grid-column: 1 / -1; gap: 12px; }
+      .search-submit { grid-column: 1 / -1; margin-top: 2px; }
+      .search-assurance { max-width: 760px; margin: 15px auto 0; }
+      .search-summary { padding: 17px 22px; }
+      .route-line { font-size: 18px; }
+      .page-heading { display: flex; align-items: end; justify-content: space-between; margin-top: 27px; }
+      .page-heading h1 { font-size: 27px; }
+      .price-panel { padding: 18px 20px 14px; }
+      .chart-layout { grid-template-columns: 54px minmax(0, 1fr); }
+      .chart-axis, .chart-plot { height: 170px; }
+      .results-toolbar { flex-direction: row; align-items: end; justify-content: space-between; margin-top: 24px; }
+      .filters { display: flex; gap: 10px; }
+      .filter-field { width: 154px; }
+      .flight-list { gap: 13px; }
+      .card-main { padding: 16px 18px 12px; }
+      .card-top { padding-bottom: 13px; }
+      .airline-name { font-size: 14px; }
+      .price { font-size: 21px; }
+      .legs { grid-template-columns: 1fr 1fr; }
+      .leg { padding: 14px 12px; grid-template-columns: 48px minmax(0, 1fr); }
+      .leg:first-child { padding-left: 0; }
+      .leg + .leg { border-top: 0; border-left: 1px solid #edf1f4; }
+      .leg-direction { font-size: 10px; }
+      .time { font-size: 16px; }
+      .airport { font-size: 11px; }
+      .card-bottom { padding-top: 12px; }
+      .bag-chip { font-size: 11px; padding: 5px 8px; }
+      .card-action { padding: 10px 18px; }
+      .select-button { min-width: 148px; min-height: 40px; font-size: 13px; }
+    }
+
+    @media (max-width: 360px) {
+      .header-inner, .page-shell { width: min(100% - 24px, 1120px); }
+      .card-main { padding: 12px 10px; }
+      .leg { grid-template-columns: 35px minmax(0, 1fr); gap: 5px; }
+      .time { font-size: 13px; }
+      .route-track { min-width: 14px; }
+      .leg-duration { font-size: 10px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#top" aria-label="Despegar, inicio"><span class="brand-mark" aria-hidden="true">D</span><span>despegar</span></a>
+      <nav class="header-section-nav" aria-label="Secciones">
+        <a class="header-section" href="#top" aria-current="page"><span class="header-section-icon" aria-hidden="true">✈</span><span>Vuelos</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top" class="page-shell">
+    <section id="search-screen" class="search-screen" aria-labelledby="search-title">
+      <div class="search-hero">
+        <div class="search-hero-heading">
+          <div>
+            <h1 id="search-title">Encontrá tu vuelo</h1>
+            <p>Elegí tu ruta y fechas para ver las opciones disponibles.</p>
+          </div>
+        </div>
+        <form id="search-form" class="search-form">
+          <div class="route-fields">
+            <label class="search-field" for="origin-input">Origen
+              <input id="origin-input" class="search-input" name="origin" type="text" value="Buenos Aires" autocomplete="off" required>
+            </label>
+            <button id="swap-route" class="swap-route" type="button" aria-label="Intercambiar origen y destino" title="Intercambiar origen y destino">⇄</button>
+            <label class="search-field" for="destination-input">Destino
+              <input id="destination-input" class="search-input" name="destination" type="text" value="Mendoza" autocomplete="off" required>
+            </label>
+          </div>
+          <div class="date-fields">
+            <label class="search-field" for="departure-date">Fecha de ida
+              <input id="departure-date" class="search-input" name="departure" type="date" value="2026-10-20" required>
+            </label>
+            <label class="search-field" for="return-date">Fecha de vuelta
+              <input id="return-date" class="search-input" name="return" type="date" value="2026-10-25" required>
+            </label>
+          </div>
+          <button class="search-submit" type="submit"><span class="search-icon" aria-hidden="true">🔍</span><span>Buscar</span></button>
+        </form>
+      </div>
+      <p class="search-assurance"><span class="assurance-mark" aria-hidden="true">✓</span>Compará precios, horarios, escalas y equipaje en un solo lugar.</p>
+    </section>
+
+    <div id="results-screen" hidden>
+    <section class="search-summary" aria-label="Resumen de búsqueda">
+      <div>
+        <div class="route-line"><span id="summary-origin" class="route-city">Buenos Aires</span><span class="route-arrow" aria-hidden="true">→</span><span id="summary-destination" class="route-city">Mendoza</span></div>
+        <div id="summary-dates" class="search-meta">Mar 20 oct – dom 25 oct 2026 · 2 adultos</div>
+      </div>
+      <span class="round-trip">Ida y vuelta</span>
+    </section>
+
+    <section class="page-heading" aria-labelledby="page-title">
+      <div>
+        <h1 id="page-title">Vuelos a Mendoza</h1>
+        <p>Compará horarios, escalas y equipaje antes de elegir.</p>
+      </div>
+      <button id="edit-search" class="edit-search" type="button">Modificar búsqueda</button>
+    </section>
+
+    <section class="price-panel" aria-labelledby="price-title">
+      <div class="panel-heading">
+        <div>
+          <h2 id="price-title">Precios por día de salida</h2>
+          <p>Octubre · total estimado para 2 pasajeros</p>
+        </div>
+        <div class="chart-legend"><span class="legend-dot" aria-hidden="true"></span><span>Más barato</span></div>
+      </div>
+      <div class="chart-scroll" tabindex="0" aria-label="Gráfico de precios de octubre. Desplazate horizontalmente para recorrer los días.">
+        <div class="chart-layout">
+          <div class="chart-axis" aria-hidden="true"><span>$700 mil</span><span>$500 mil</span><span>$300 mil</span><span>$0</span></div>
+          <div class="chart-plot">
+            <div class="grid-lines" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+            <div id="price-chart" class="day-list" role="img" aria-label="Tendencia referencial de precios. El 18 de octubre cuesta 30 por ciento menos y el 24 cuesta 50 por ciento menos que la referencia."></div>
+          </div>
+        </div>
+      </div>
+      <p class="chart-footnote">Referencia visual: el archivo de resultados no incluye histórico diario. Los descuentos indicados son 30% el 18 oct y 50% el 24 oct, sobre una base estimada de $600.000.</p>
+    </section>
+
+    <section aria-labelledby="results-title">
+      <div class="results-toolbar">
+        <h2 id="results-title" class="results-count">Resultados <span id="result-count">10 opciones del archivo</span></h2>
+        <div class="filters" aria-label="Filtros y orden">
+          <label class="filter-field">Aerolínea
+            <select id="airline-filter" aria-label="Filtrar por aerolínea">
+              <option value="all">Todas</option>
+              <option value="AR">Aerolíneas Argentinas</option>
+              <option value="0J">JetSMART</option>
+            </select>
+          </label>
+          <label class="filter-field">Escalas
+            <select id="stops-filter" aria-label="Filtrar por escalas">
+              <option value="all">Cualquiera</option>
+              <option value="0">Sin escalas</option>
+              <option value="1">1 escala</option>
+            </select>
+          </label>
+          <label class="filter-field">Ordenar por
+            <select id="sort-select" aria-label="Ordenar resultados">
+              <option value="recommended">Recomendados</option>
+              <option value="price">Menor precio</option>
+              <option value="duration">Menor duración</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <div id="flight-list" class="flight-list" aria-live="polite"></div>
+    </section>
+
+    <p class="page-footer">Precios finales para 2 adultos · valores expresados en pesos argentinos</p>
+    </div>
+  </main>
+
+  <script>
+    const flights = [
+      { airline: "0J", name: "JetSMART", fare: "TRAVEL", price: 669906, baggage: { backpack: true, carryOn: false, checked: 1 }, outbound: { from: "EZE", to: "MDZ", depart: "06:00", arrive: "07:59", duration: "1 h 59 min", stops: 0 }, inbound: { from: "MDZ", to: "EZE", depart: "08:54", arrive: "10:33", duration: "1 h 39 min", stops: 0 } },
+      { airline: "AR", name: "Aerolíneas Argentinas", fare: "BASE", price: 499304.52, baggage: { backpack: true, carryOn: false, checked: 0 }, outbound: { from: "EZE", to: "MDZ", depart: "14:20", arrive: "16:20", duration: "2 h", stops: 0 }, inbound: { from: "MDZ", to: "AEP", depart: "10:40", arrive: "17:10", duration: "6 h 30 min", stops: 1 } },
+      { airline: "0J", name: "JetSMART", fare: "TRAVEL", price: 669906, baggage: { backpack: true, carryOn: false, checked: 1 }, outbound: { from: "AEP", to: "MDZ", depart: "12:25", arrive: "14:24", duration: "1 h 59 min", stops: 0 }, inbound: { from: "MDZ", to: "EZE", depart: "08:54", arrive: "10:33", duration: "1 h 39 min", stops: 0 } },
+      { airline: "AR", name: "Aerolíneas Argentinas", fare: "BASE", price: 685775.964, baggage: { backpack: true, carryOn: false, checked: 0 }, outbound: { from: "AEP", to: "MDZ", depart: "06:05", arrive: "08:05", duration: "2 h", stops: 0 }, inbound: { from: "MDZ", to: "AEP", depart: "07:30", arrive: "09:10", duration: "1 h 40 min", stops: 0 } },
+      { airline: "0J", name: "JetSMART", fare: "TRAVEL", price: 704406, baggage: { backpack: true, carryOn: false, checked: 1 }, outbound: { from: "AEP", to: "MDZ", depart: "16:41", arrive: "18:40", duration: "1 h 59 min", stops: 0 }, inbound: { from: "MDZ", to: "EZE", depart: "08:54", arrive: "10:33", duration: "1 h 39 min", stops: 0 } },
+      { airline: "0J", name: "JetSMART", fare: "TRAVEL", price: 707028, baggage: { backpack: true, carryOn: false, checked: 1 }, outbound: { from: "AEP", to: "MDZ", depart: "16:41", arrive: "18:40", duration: "1 h 59 min", stops: 0 }, inbound: { from: "MDZ", to: "EZE", depart: "08:54", arrive: "10:33", duration: "1 h 39 min", stops: 0 } },
+      { airline: "0J", name: "JetSMART", fare: "LIGHT", price: 696126, baggage: { backpack: true, carryOn: true, checked: 0 }, outbound: { from: "AEP", to: "MDZ", depart: "12:25", arrive: "14:24", duration: "1 h 59 min", stops: 0 }, inbound: { from: "MDZ", to: "EZE", depart: "08:54", arrive: "10:33", duration: "1 h 39 min", stops: 0 } },
+      { airline: "0J", name: "JetSMART", fare: "LIGHT", price: 696126, baggage: { backpack: true, carryOn: true, checked: 0 }, outbound: { from: "EZE", to: "MDZ", depart: "06:00", arrive: "07:59", duration: "1 h 59 min", stops: 0 }, inbound: { from: "MDZ", to: "EZE", depart: "08:54", arrive: "10:33", duration: "1 h 39 min", stops: 0 } },
+      { airline: "AR", name: "Aerolíneas Argentinas", fare: "BASE", price: 734937.384, baggage: { backpack: true, carryOn: false, checked: 0 }, outbound: { from: "AEP", to: "MDZ", depart: "12:20", arrive: "14:20", duration: "2 h", stops: 0 }, inbound: { from: "MDZ", to: "AEP", depart: "07:30", arrive: "09:10", duration: "1 h 40 min", stops: 0 } },
+      { airline: "0J", name: "JetSMART", fare: "TRAVEL", price: 615260, baggage: { backpack: true, carryOn: false, checked: 1 }, outbound: { from: "AEP", to: "MDZ", depart: "16:41", arrive: "18:40", duration: "1 h 59 min", stops: 0 }, inbound: { from: "MDZ", to: "EZE", depart: "08:54", arrive: "10:33", duration: "1 h 39 min", stops: 0 } }
+    ];
+
+    const chartDays = [
+      { day: 16, price: 560000 }, { day: 17, price: 590000 }, { day: 18, price: 420000, discount: "30% más barato" },
+      { day: 19, price: 575000 }, { day: 20, price: 600000, selected: true }, { day: 21, price: 625000 },
+      { day: 22, price: 580000 }, { day: 23, price: 550000 }, { day: 24, price: 300000, discount: "50% más barato" },
+      { day: 25, price: 570000 }
+    ];
+
+    const currency = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 });
+    const chart = document.querySelector("#price-chart");
+    const flightList = document.querySelector("#flight-list");
+    const countLabel = document.querySelector("#result-count");
+    const airlineFilter = document.querySelector("#airline-filter");
+    const stopsFilter = document.querySelector("#stops-filter");
+    const sortSelect = document.querySelector("#sort-select");
+    const searchScreen = document.querySelector("#search-screen");
+    const resultsScreen = document.querySelector("#results-screen");
+    const searchForm = document.querySelector("#search-form");
+    const originInput = document.querySelector("#origin-input");
+    const destinationInput = document.querySelector("#destination-input");
+    const departureDateInput = document.querySelector("#departure-date");
+    const returnDateInput = document.querySelector("#return-date");
+
+    function formatSearchDate(value) {
+      const [year, month, day] = value.split("-").map(Number);
+      return new Intl.DateTimeFormat("es-AR", { weekday: "short", day: "numeric", month: "short" })
+        .format(new Date(year, month - 1, day))
+        .replace(/\./g, "");
+    }
+
+    document.querySelector("#swap-route").addEventListener("click", () => {
+      const currentOrigin = originInput.value;
+      originInput.value = destinationInput.value;
+      destinationInput.value = currentOrigin;
+    });
+
+    departureDateInput.addEventListener("change", () => {
+      returnDateInput.min = departureDateInput.value;
+      if (returnDateInput.value < departureDateInput.value) returnDateInput.value = departureDateInput.value;
+    });
+
+    searchForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      returnDateInput.setCustomValidity(returnDateInput.value < departureDateInput.value ? "La vuelta debe ser el mismo día o después de la ida." : "");
+      if (!searchForm.reportValidity()) return;
+
+      const origin = originInput.value.trim();
+      const destination = destinationInput.value.trim();
+      document.querySelector("#summary-origin").textContent = origin;
+      document.querySelector("#summary-destination").textContent = destination;
+      document.querySelector("#summary-dates").textContent = `${formatSearchDate(departureDateInput.value)} – ${formatSearchDate(returnDateInput.value)} · 2 adultos`;
+      document.querySelector("#page-title").textContent = `Vuelos a ${destination}`;
+      searchScreen.hidden = true;
+      resultsScreen.hidden = false;
+      renderFlights();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    document.querySelector("#edit-search").addEventListener("click", () => {
+      resultsScreen.hidden = true;
+      searchScreen.hidden = false;
+      originInput.focus();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    chart.innerHTML = chartDays.map((day) => {
+      const barHeight = (day.price / 700000) * 100;
+      const barClass = day.discount ? "price-bar is-cheap" : day.selected ? "price-bar is-selected" : "price-bar";
+      const badge = day.discount ? `<span class="deal-badge">${day.discount}</span>` : "";
+      const selectedClass = day.selected ? " is-selected" : "";
+      return `<div class="day-column${selectedClass}" aria-label="${day.day} de octubre: ${currency.format(day.price)}${day.discount ? `, ${day.discount}` : ""}">
+        <div class="deal-slot">${badge}</div>
+        <div class="bar-well"><span class="${barClass}" style="height:${barHeight}%" aria-hidden="true"></span></div>
+        <span class="day-label">${day.day} oct</span>
+      </div>`;
+    }).join("");
+
+    function durationInMinutes(duration) {
+      const hours = Number(duration.match(/(\d+) h/)?.[1] || 0);
+      const minutes = Number(duration.match(/h (\d+) min/)?.[1] || 0);
+      return hours * 60 + minutes;
+    }
+
+    function legMarkup(leg, direction) {
+      const stopLabel = leg.stops === 0 ? "Directo" : `${leg.stops} escala`;
+      const stopClass = leg.stops === 0 ? "leg-stops is-direct" : "leg-stops";
+      return `<div class="leg">
+        <span class="leg-direction">${direction}</span>
+        <div class="leg-times">
+          <div><div class="time">${leg.depart}</div><div class="airport">${leg.from}</div></div>
+          <div class="route-track" aria-hidden="true"><span>${leg.duration}</span><span class="track-line"></span><span>${stopLabel}</span></div>
+          <div><div class="time">${leg.arrive}</div><div class="airport">${leg.to}</div></div>
+        </div>
+      </div>`;
+    }
+
+    function baggageMarkup(baggage) {
+      const chips = [`<span class="bag-chip included">Mochila incluida</span>`];
+      chips.push(`<span class="bag-chip${baggage.carryOn ? " included" : ""}">${baggage.carryOn ? "Equipaje de mano incluido" : "Sin equipaje de mano"}</span>`);
+      chips.push(`<span class="bag-chip${baggage.checked ? " included" : ""}">${baggage.checked ? `${baggage.checked} valija despachada` : "Sin valija despachada"}</span>`);
+      return chips.join("");
+    }
+
+    function cardMarkup(flight, index) {
+      const totalDuration = durationInMinutes(flight.outbound.duration) + durationInMinutes(flight.inbound.duration);
+      return `<article class="flight-card" data-index="${index}">
+        <div class="card-main">
+          <div class="card-top">
+            <div class="airline">
+              <span class="airline-code" aria-hidden="true">${flight.airline === "0J" ? "JS" : flight.airline}</span>
+              <div><div class="airline-name">${flight.name}</div><span class="fare-label">TARIFA ${flight.fare}</span></div>
+            </div>
+            <div class="price-block"><div class="price">${currency.format(flight.price)}</div><div class="price-caption">total · 2 pasajeros</div></div>
+          </div>
+          <div class="legs">${legMarkup(flight.outbound, "IDA")}${legMarkup(flight.inbound, "VUELTA")}</div>
+          <div class="card-bottom">${baggageMarkup(flight.baggage)}</div>
+        </div>
+        <div class="card-action"><span class="fare-note">Tiempo total ida y vuelta: ${Math.floor(totalDuration / 60)} h ${totalDuration % 60 ? `${totalDuration % 60} min` : ""}</span><button class="select-button" type="button" aria-pressed="false">Elegir vuelo</button></div>
+      </article>`;
+    }
+
+    function renderFlights() {
+      const airline = airlineFilter.value;
+      const stops = stopsFilter.value;
+      const sort = sortSelect.value;
+      const visible = flights.map((flight, index) => ({ ...flight, sourceIndex: index }))
+        .filter((flight) => airline === "all" || flight.airline === airline)
+        .filter((flight) => stops === "all" || String(Math.max(flight.outbound.stops, flight.inbound.stops)) === stops);
+
+      if (sort === "price") visible.sort((first, second) => first.price - second.price);
+      if (sort === "duration") visible.sort((first, second) => {
+        const firstTotal = durationInMinutes(first.outbound.duration) + durationInMinutes(first.inbound.duration);
+        const secondTotal = durationInMinutes(second.outbound.duration) + durationInMinutes(second.inbound.duration);
+        return firstTotal - secondTotal;
+      });
+
+      countLabel.textContent = `${visible.length} de 10 opciones del archivo`;
+      if (!visible.length) {
+        flightList.innerHTML = `<div class="empty-state"><strong>No hay vuelos con esos filtros</strong>Probá cambiar la aerolínea o la cantidad de escalas.</div>`;
+        return;
+      }
+      flightList.innerHTML = visible.map((flight) => cardMarkup(flight, flight.sourceIndex)).join("");
+      flightList.querySelectorAll(".select-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          const card = button.closest(".flight-card");
+          const isChosen = button.getAttribute("aria-pressed") === "true";
+          flightList.querySelectorAll(".flight-card").forEach((otherCard) => {
+            otherCard.classList.remove("is-chosen");
+            const otherButton = otherCard.querySelector(".select-button");
+            otherButton.setAttribute("aria-pressed", "false");
+            otherButton.textContent = "Elegir vuelo";
+          });
+          if (!isChosen) {
+            card.classList.add("is-chosen");
+            button.setAttribute("aria-pressed", "true");
+            button.textContent = "Vuelo elegido";
+          }
+        });
+      });
+    }
+
+    [airlineFilter, stopsFilter, sortSelect].forEach((control) => control.addEventListener("change", renderFlights));
+  </script>
+</body>
+</html>
