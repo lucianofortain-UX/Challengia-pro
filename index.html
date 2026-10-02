@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vuelos Buenos Aires → Mendoza | Despegar</title>
+  <!-- EVA UI css resources start -->
+  <link rel="stylesheet" href="https://www.despegar.com/eva-core/static/eva/eva-core.min.css?">
+  <link rel="stylesheet" href="https://www.despegar.com/eva-core/static/eva/eva.min.css?">
+  <!-- EVA UI css resources end -->
+  <style>
+    /* ─────────────────────────────────────────────
+       EVA UI Design Tokens (Despegar Design System)
+       ───────────────────────────────────────────── */
+    :root {
+      /* Brand */
+      --brand-1: #EBE5F5;
+      --brand-2: #A780FF;
+      --brand-3: #4300D2;
+      --brand-4: #270570;
+      --brand-sec-3: #E61A06;
+      /* Neutrals */
+      --n800: #323439;
+      --n700: #565A60;
+      --n600: #72777F;
+      --n400: #C0C4CC;
+      --n300: #DDE1E8;
+      --n200: #E9ECF1;
+      --n100: #F2F4F5;
+      --white: #FFFFFF;
+      /* Status */
+      --success-500: #028574;
+      --success-300: #C9F0ED;
+      --success-100: #E6FBFB;
+      --warning-500: #C87203;
+      --warning-100: #FEF4E6;
+      --error-500: #CB4032;
+      --error-100: #FEEDEC;
+      --info-100: #ECF4FE;
+      --info-500: #2D77CF;
+      /* Spacing (4px base) */
+      --s1: 4px;  --s2: 8px;  --s3: 12px; --s4: 16px; --s5: 20px;
+      --s6: 24px; --s7: 28px; --s8: 32px; --s9: 36px; --s10: 40px;
+      /* Radius */
+      --r2: 4px;  --r4: 8px;  --r6: 12px; --r8: 16px; --r12: 24px;
+      /* Shadows */
+      --shadow-line: 0 1px 3px rgba(50,52,57,.08), 0 0 0 1px var(--n300);
+      --shadow-hover: 0 6px 24px rgba(67,0,210,.14), 0 0 0 1.5px var(--brand-3);
+      --shadow-static: 0 8px 32px rgba(50,52,57,.14);
+    }
+
+    /* ─── Reset & Base ─── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      background: var(--n100);
+      color: var(--n800);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Top Nav ─── */
+    .topnav {
+      background: var(--white);
+      border-bottom: 1px solid var(--n300);
+      height: 52px;
+      display: flex;
+      align-items: center;
+      padding: 0 var(--s6);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: var(--s4);
+    }
+    .topnav-logo { text-decoration: none; display: flex; align-items: center; }
+    .topnav-logo img { height: 28px; width: auto; display: block; }
+    .topnav-back {
+      margin-left: auto;
+      font-size: 13px;
+      color: var(--brand-3);
+      cursor: pointer;
+      font-weight: 500;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: var(--s1);
+    }
+
+    /* ─── Search Header ─── */
+    .search-header {
+      background: linear-gradient(135deg, var(--brand-4) 0%, var(--brand-3) 60%, var(--brand-2) 100%);
+      padding: var(--s6) var(--s6) var(--s8);
+      position: relative;
+      overflow: hidden;
+    }
+    .search-header::after {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.06);
+      pointer-events: none;
+    }
+    .search-route {
+      display: flex;
+      align-items: center;
+      gap: var(--s3);
+      margin-bottom: var(--s2);
+    }
+    .search-route h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.3px;
+    }
+    .search-route .arrow-icon {
+      color: var(--brand-2);
+      font-size: 18px;
+    }
+    .search-meta {
+      display: flex;
+      gap: var(--s4);
+      flex-wrap: wrap;
+    }
+    .search-meta-chip {
+      background: rgba(255,255,255,.15);
+      border-radius: 100px;
+      padding: var(--s1) var(--s3);
+      font-size: 12px;
+      color: rgba(255,255,255,.92);
+      backdrop-filter: blur(4px);
+      font-weight: 500;
+    }
+    .results-count {
+      margin-top: var(--s4);
+      font-size: 13px;
+      color: rgba(255,255,255,.7);
+    }
+    .results-count strong { color: var(--white); }
+
+    /* ─── Sticky Sort/Filter Bar ─── */
+    .sortbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--n300);
+      position: sticky;
+      top: 52px;
+      z-index: 90;
+      padding: 0 var(--s6);
+    }
+    .sort-tabs {
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .sort-tabs::-webkit-scrollbar { display: none; }
+    .sort-tab {
+      padding: var(--s3) var(--s4);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--n600);
+      cursor: pointer;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: color .18s, border-color .18s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      outline: none;
+    }
+    .sort-tab:hover { color: var(--brand-3); }
+    .sort-tab.active {
+      color: var(--brand-3);
+      border-bottom-color: var(--brand-3);
+      font-weight: 600;
+    }
+
+    /* ─── Filter Pills ─── */
+    .filter-bar {
+      padding: var(--s3) var(--s6);
+      display: flex;
+      gap: var(--s2);
+      overflow-x: auto;
+      scrollbar-width: none;
+      background: var(--white);
+    }
+    .filter-bar::-webkit-scrollbar { display: none; }
+    .filter-pill {
+      border: 1px solid var(--n300);
+      border-radius: 100px;
+      padding: var(--s1) var(--s3);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--n700);
+      cursor: pointer;
+      white-space: nowrap;
+      background: var(--white);
+      transition: all .18s;
+      outline: none;
+    }
+    .filter-pill:hover {
+      border-color: var(--brand-3);
+      color: var(--brand-3);
+      background: var(--brand-1);
+    }
+    .filter-pill.active {
+      border-color: var(--brand-3);
+      background: var(--brand-1);
+      color: var(--brand-3);
+      font-weight: 600;
+    }
+
+    /* ─── Layout ─── */
+    .page-layout {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: var(--s5) var(--s4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--s3);
+    }
+
+    /* ─── Highlights Row ─── */
+    .highlights-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--s2);
+    }
+    .highlight-card {
+      background: var(--white);
+      border-radius: var(--r8);
+      padding: var(--s4) var(--s4);
+      box-shadow: var(--shadow-line);
+      cursor: pointer;
+      transition: box-shadow .2s, transform .15s;
+    }
+    .highlight-card:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-1px);
+    }
+    .highlight-card.active {
+      border: 1.5px solid var(--brand-3);
+      box-shadow: 0 0 0 3px var(--brand-1);
+    }
+    .highlight-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--n600);
+      margin-bottom: var(--s1);
+    }
+    .highlight-label.cheapest { color: var(--success-500); }
+    .highlight-label.fastest { color: var(--brand-3); }
+    .highlight-label.best { color: var(--warning-500); }
+    .highlight-price {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--n800);
+    }
+    .highlight-price span { font-size: 11px; font-weight: 400; color: var(--n600); margin-left: 2px; }
+    .highlight-dur { font-size: 11px; color: var(--n600); margin-top: 2px; }
+
+    /* ─── Flight Card ─── */
+    .flight-card {
+      background: var(--white);
+      border-radius: var(--r12);
+      box-shadow: var(--shadow-line);
+      overflow: hidden;
+      transition: box-shadow .22s, transform .18s;
+      cursor: pointer;
+      animation: cardIn .35s ease both;
+    }
+    .flight-card:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-2px);
+    }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-badge-row {
+      padding: var(--s3) var(--s4) 0;
+      display: flex;
+      gap: var(--s2);
+      min-height: 0;
+    }
+    .card-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border-radius: 100px;
+      padding: 2px var(--s2);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .2px;
+    }
+    .card-badge.cheapest  { background: var(--success-100); color: var(--success-500); }
+    .card-badge.urgent    { background: var(--error-100);   color: var(--error-500); }
+    .card-badge.best      { background: var(--warning-100); color: var(--warning-500); }
+    .card-badge.popular   { background: var(--brand-1);     color: var(--brand-3); }
+    .card-badge.carryon   { background: var(--info-100);    color: var(--info-500); }
+
+    .card-main {
+      padding: var(--s4) var(--s5);
+      display: grid;
+      grid-template-columns: 68px 1fr auto;
+      gap: var(--s4);
+      align-items: center;
+    }
+
+    /* Airline col */
+    .airline-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--s1);
+    }
+    .airline-logo {
+      width: 56px;
+      height: 36px;
+      border-radius: var(--r4);
+      border: 1px solid var(--n300);
+      object-fit: contain;
+      background: var(--white);
+      padding: 4px 6px;
+    }
+    .airline-logo-fallback {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--r4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .5px;
+    }
+    .airline-logo-fallback.AR { background: #e8f4e8; color: #2d7d2d; }
+    .airline-logo-fallback.JA { background: #fff0e0; color: #d4600a; }
+    .airline-name {
+      font-size: 10px;
+      color: var(--n600);
+      text-align: center;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+
+    /* Route col */
+    .route-col { flex: 1; min-width: 0; }
+
+    .leg {
+      display: flex;
+      align-items: center;
+      gap: var(--s3);
+      margin-bottom: var(--s3);
+    }
+    .leg:last-child { margin-bottom: 0; }
+    .leg.return-leg { opacity: .75; }
+    .leg.return-leg .leg-time { font-size: 16px; }
+
+    .leg-endpoint {
+      text-align: center;
+      min-width: 44px;
+    }
+    .leg-time {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--n800);
+      letter-spacing: -0.5px;
+      line-height: 1;
+    }
+    .leg-airport {
+      font-size: 11px;
+      color: var(--n600);
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    .leg-line {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      position: relative;
+    }
+    .leg-bar-wrap {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      position: relative;
+    }
+    .leg-bar-seg {
+      flex: 1;
+      height: 1.5px;
+      background: linear-gradient(90deg, var(--n300), var(--brand-2));
+    }
+    .leg-bar-seg.right {
+      background: linear-gradient(90deg, var(--brand-2), var(--n300));
+    }
+    .leg-bar-wrap::before, .leg-bar-wrap::after {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--brand-3);
+      flex-shrink: 0;
+    }
+    .leg-plane {
+      font-size: 18px;
+      color: var(--brand-3);
+      flex-shrink: 0;
+      line-height: 1;
+      margin: 0 2px;
+    }
+
+    .leg-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .leg-direct {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--success-500);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+    .leg-dur {
+      font-size: 11px;
+      color: var(--n600);
+    }
+    .leg-label {
+      font-size: 10px;
+      color: var(--n600);
+      font-weight: 500;
+    }
+
+    .leg-divider {
+      width: 100%;
+      height: 1px;
+      background: var(--n200);
+      margin: var(--s2) 0;
+    }
+
+    /* Price col */
+    .price-col {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: var(--s2);
+      min-width: 130px;
+    }
+    .price-amount {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--brand-3);
+      letter-spacing: -0.5px;
+      line-height: 1;
+    }
+    .price-currency { font-size: 13px; font-weight: 500; vertical-align: super; margin-right: 2px; }
+    .price-label {
+      font-size: 11px;
+      color: var(--n600);
+      margin-top: -var(--s1);
+    }
+    .btn-elegir {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--brand-3);
+      color: var(--white);
+      border: none;
+      border-radius: 100px;
+      padding: 10px var(--s5);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .18s, transform .12s;
+      width: 100%;
+      text-decoration: none;
+      letter-spacing: .1px;
+      outline: none;
+    }
+    .btn-elegir:hover  { background: var(--brand-4); transform: translateY(-1px); }
+    .btn-elegir:active { transform: scale(.97); }
+
+    /* ─── Luggage Footer ─── */
+    .card-footer {
+      border-top: 1px solid var(--n200);
+      padding: var(--s3) var(--s5);
+      display: flex;
+      align-items: center;
+      gap: var(--s3);
+      flex-wrap: wrap;
+    }
+    .luggage-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--n700);
+    }
+    .luggage-chip .chip-icon { font-size: 14px; }
+    .luggage-chip.included { color: var(--success-500); }
+    .luggage-chip.excluded { color: var(--n400); }
+    .luggage-sep { width: 1px; height: 14px; background: var(--n300); }
+
+    .urgency-chip {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--error-500);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .65; }
+    }
+
+    /* ─── AI Tip Card ─── */
+    .tip-card {
+      background: linear-gradient(135deg, var(--brand-4), var(--brand-3));
+      border-radius: var(--r12);
+      padding: var(--s5);
+      color: var(--white);
+      display: flex;
+      align-items: flex-start;
+      gap: var(--s4);
+      animation: cardIn .35s ease both;
+    }
+    .tip-icon {
+      font-size: 32px;
+      flex-shrink: 0;
+      line-height: 1;
+      color: var(--white);
+    }
+    .tip-pill {
+      display: inline-block;
+      background: rgba(255,255,255,.2);
+      border-radius: 100px;
+      padding: 2px var(--s2);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+      margin-bottom: var(--s2);
+    }
+    .tip-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: var(--s1);
+    }
+    .tip-content {
+      font-size: 12px;
+      color: rgba(255,255,255,.85);
+      line-height: 1.5;
+    }
+
+    /* ─── EVA Icons sizing ─── */
+    [class*="eva-3-icon-"] {
+      font-size: 16px;
+      line-height: 1;
+      vertical-align: middle;
+      display: inline-block;
+    }
+    .luggage-chip [class*="eva-3-icon-"] { font-size: 14px; }
+    .card-badge [class*="eva-3-icon-"]   { font-size: 12px; }
+    .filter-pill [class*="eva-3-icon-"]  { font-size: 13px; }
+    .highlight-label [class*="eva-3-icon-"] { font-size: 12px; }
+    .search-meta-chip [class*="eva-3-icon-"] { font-size: 12px; }
+    .urgency-chip [class*="eva-3-icon-"] { font-size: 13px; }
+    .btn-elegir [class*="eva-3-icon-"]   { font-size: 14px; }
+
+    /* ─── No Results ─── */
+    .no-results {
+      text-align: center;
+      padding: var(--s10);
+      color: var(--n600);
+      font-size: 14px;
+    }
+
+    /* ─── Sofia FAB ─── */
+    .sofia-fab {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 200;
+    }
+    .sofia-btn {
+      display: flex;
+      align-items: center;
+      gap: var(--s3);
+      background: var(--white);
+      border: none;
+      border-radius: 100px;
+      padding: 12px 18px 12px 14px;
+      box-shadow: 0 4px 20px rgba(67,0,210,.18), 0 1px 4px rgba(0,0,0,.08);
+      cursor: pointer;
+      outline: none;
+      position: relative;
+      overflow: hidden;
+      animation: sofia-float 4s ease-in-out infinite;
+      transition: box-shadow .25s, transform .2s cubic-bezier(.34,1.56,.64,1);
+    }
+    /* Gradient layer que aparece en hover */
+    .sofia-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--brand-4), var(--brand-3) 60%, var(--brand-2));
+      opacity: 0;
+      transition: opacity .25s;
+      border-radius: inherit;
+    }
+    .sofia-btn:hover::before  { opacity: 1; }
+    .sofia-btn:hover { box-shadow: 0 8px 32px rgba(67,0,210,.38); transform: translateY(-2px); animation: none; }
+    .sofia-btn:active { transform: scale(.96); }
+
+    .sofia-btn-icon {
+      font-size: 20px;
+      color: var(--brand-3);
+      position: relative; /* sobre el ::before */
+      transition: color .25s;
+      line-height: 1;
+    }
+    .sofia-btn-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--n800);
+      position: relative;
+      transition: color .25s;
+      white-space: nowrap;
+    }
+    .sofia-btn-chevron {
+      font-size: 14px;
+      color: var(--n600);
+      position: relative;
+      transition: color .25s, transform .25s;
+    }
+    .sofia-btn:hover .sofia-btn-icon,
+    .sofia-btn:hover .sofia-btn-label,
+    .sofia-btn:hover .sofia-btn-chevron  { color: var(--white); }
+    .sofia-btn:hover .sofia-btn-chevron  { transform: translateX(3px); }
+
+    @keyframes sofia-float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-6px); }
+    }
+
+    /* ─── Sofia Chat Window ─── */
+    .sofia-chat {
+      position: fixed;
+      bottom: 100px;
+      right: 28px;
+      width: 310px;
+      background: var(--white);
+      border-radius: var(--r12);
+      box-shadow: var(--shadow-static);
+      z-index: 199;
+      transform: scale(.85) translateY(16px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform .3s cubic-bezier(.34,1.56,.64,1), opacity .25s;
+      transform-origin: bottom right;
+      overflow: hidden;
+    }
+    .sofia-chat.open {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+      pointer-events: all;
+    }
+    .sofia-chat-header {
+      background: linear-gradient(135deg, var(--brand-4), var(--brand-3) 60%, var(--brand-2));
+      padding: var(--s4) var(--s5);
+      display: flex;
+      align-items: center;
+      gap: var(--s3);
+    }
+    .sofia-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: var(--white); flex-shrink: 0;
+    }
+    .sofia-header-info { flex: 1; }
+    .sofia-header-info strong { display: block; font-size: 14px; color: var(--white); font-weight: 700; }
+    .sofia-header-info span  { font-size: 11px; color: rgba(255,255,255,.75); }
+    .sofia-close {
+      background: rgba(255,255,255,.15); border: none; border-radius: 50%;
+      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--white); font-size: 16px; transition: background .15s;
+      outline: none;
+    }
+    .sofia-close:hover { background: rgba(255,255,255,.28); }
+    .sofia-chat-body {
+      padding: var(--s4) var(--s5);
+      display: flex; flex-direction: column; gap: var(--s3);
+    }
+    .sofia-bubble {
+      background: var(--brand-1);
+      border-radius: 16px 16px 16px 4px;
+      padding: var(--s3) var(--s4);
+      font-size: 13px; color: var(--n700); line-height: 1.5;
+      animation: bubble-in .4s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    .sofia-bubble-2 { animation-delay: .25s; }
+    @keyframes bubble-in {
+      from { opacity: 0; transform: translateY(8px) scale(.95); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .sofia-chat-input {
+      padding: var(--s3) var(--s5) var(--s4);
+      display: flex; gap: var(--s2); align-items: center;
+      border-top: 1px solid var(--n200);
+    }
+    .sofia-input {
+      flex: 1; border: 1.5px solid var(--n300); border-radius: 100px;
+      padding: 8px var(--s4); font-size: 13px; color: var(--n800);
+      outline: none; background: var(--white); transition: border-color .18s;
+      font-family: inherit;
+    }
+    .sofia-input:focus { border-color: var(--brand-3); }
+    .sofia-send {
+      width: 36px; height: 36px; border-radius: 50%; border: none;
+      background: var(--brand-3); color: var(--white); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; transition: background .18s, transform .12s; flex-shrink: 0;
+      outline: none;
+    }
+    .sofia-send:hover  { background: var(--brand-4); }
+    .sofia-send:active { transform: scale(.9); }
+
+    /* ─── Load More ─── */
+    .load-more-btn {
+      display: block;
+      width: 100%;
+      background: var(--white);
+      border: 1.5px solid var(--brand-3);
+      border-radius: var(--r12);
+      padding: var(--s4);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--brand-3);
+      cursor: pointer;
+      transition: all .18s;
+      text-align: center;
+      outline: none;
+    }
+    .load-more-btn:hover {
+      background: var(--brand-1);
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 600px) {
+      .highlights-row { grid-template-columns: repeat(3, 1fr); }
+      .card-main {
+        grid-template-columns: 56px 1fr;
+        grid-template-rows: auto auto;
+      }
+      .price-col {
+        grid-column: 1 / -1;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        border-top: 1px solid var(--n200);
+        padding-top: var(--s3);
+        min-width: 0;
+      }
+      .btn-elegir { width: auto; }
+      .leg-time { font-size: 16px; }
+      .price-amount { font-size: 20px; }
+      .search-header { padding: var(--s4) var(--s4) var(--s6); }
+      .page-layout { padding: var(--s3) var(--s3); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Nav -->
+  <nav class="topnav">
+    <a class="topnav-logo" href="#"><img src="despegar-logo.png" alt="Despegar" /></a>
+    <a class="topnav-back" href="#">← Modificar búsqueda</a>
+  </nav>
+
+  <!-- Search Header -->
+  <header class="search-header">
+    <div class="search-route">
+      <h1>Buenos Aires</h1>
+      <span class="arrow-icon">⇄</span>
+      <h1>Mendoza</h1>
+    </div>
+    <div class="search-meta">
+      <span class="search-meta-chip"><i class="eva-3-icon-calendar"></i> 20 oct – 25 oct 2026</span>
+      <span class="search-meta-chip"><i class="eva-3-icon-passengers"></i> 2 adultos</span>
+      <span class="search-meta-chip"><i class="eva-3-icon-seat"></i> Economy</span>
+    </div>
+    <p class="results-count" id="results-count">Cargando resultados…</p>
+  </header>
+
+  <!-- Sort Tabs -->
+  <div class="sortbar">
+    <div class="sort-tabs" role="tablist">
+      <button class="sort-tab active" data-sort="recommended" onclick="setSort(this)">Recomendado</button>
+      <button class="sort-tab" data-sort="cheapest"     onclick="setSort(this)">Más barato</button>
+      <button class="sort-tab" data-sort="fastest"      onclick="setSort(this)">Más rápido</button>
+      <button class="sort-tab" data-sort="morning"      onclick="setSort(this)">Mañana</button>
+    </div>
+  </div>
+
+  <!-- Filter Pills -->
+  <div class="filter-bar">
+    <button class="filter-pill active"  data-filter="all"     onclick="setFilter(this)">Todos</button>
+    <button class="filter-pill"         data-filter="AR"      onclick="setFilter(this)">Aerolíneas Argentinas</button>
+    <button class="filter-pill"         data-filter="JA"      onclick="setFilter(this)">JetSMART</button>
+    <button class="filter-pill"         data-filter="bag"     onclick="setFilter(this)"><i class="eva-3-icon-suitcase"></i> Con maleta</button>
+    <button class="filter-pill"         data-filter="carryon" onclick="setFilter(this)"><i class="eva-3-icon-handbag"></i> Carry-on incluido</button>
+    <button class="filter-pill"         data-filter="few"     onclick="setFilter(this)"><i class="eva-3-icon-warning"></i> Últimos asientos</button>
+  </div>
+
+  <!-- Results -->
+  <main class="page-layout" id="results-container">
+    <!-- Highlights + Cards injected by JS -->
+  </main>
+
+  <!-- Sofia AI floating button -->
+  <div class="sofia-fab">
+    <button class="sofia-btn" onclick="toggleSofia()" aria-label="Abrir chat con SOFIA">
+      <i class="eva-3-icon-artificial-intelligence sofia-btn-icon"></i>
+      <span class="sofia-btn-label">Chatear con SOFIA</span>
+      <i class="eva-3-icon-chevron-right sofia-btn-chevron"></i>
+    </button>
+  </div>
+
+  <!-- Sofia Chat Window -->
+  <div class="sofia-chat" id="sofia-chat">
+    <div class="sofia-chat-header">
+      <div class="sofia-avatar">
+        <i class="eva-3-icon-artificial-intelligence"></i>
+      </div>
+      <div class="sofia-header-info">
+        <strong>SOFIA</strong>
+        <span>Inteligencia artificial · En línea</span>
+      </div>
+      <button class="sofia-close" onclick="toggleSofia()">
+        <i class="eva-3-icon-cross"></i>
+      </button>
+    </div>
+    <div class="sofia-chat-body">
+      <div class="sofia-bubble">
+        ¡Hola! Soy SOFIA, la IA de Despegar 👋
+      </div>
+      <div class="sofia-bubble sofia-bubble-2">
+        4 de cada 10 viajeros encuentran su vuelo ideal más rápido hablando conmigo. ¿En qué te puedo ayudar hoy?
+      </div>
+    </div>
+    <div class="sofia-chat-input">
+      <input class="sofia-input" placeholder="Escribí tu consulta…" onkeydown="if(event.key==='Enter')sendSofia(this)" />
+      <button class="sofia-send" onclick="sendSofia(this.previousElementSibling)">
+        <i class="eva-3-icon-send"></i>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /* ─────────────────────────────────
+       Flight data (from flights.json)
+       ───────────────────────────────── */
+    const AIRLINE_LOGOS = { AR: 'logo-ar.png', JA: 'logo-ja.png' };
+    const AIRLINE_NAMES = { AR: 'Aerolíneas', JA: 'JetSMART' };
+
+    const flights = [
+      {
+        airline: 'AR', airlineFull: 'Aerolíneas Argentinas',
+        out: { dep: '14:20', arr: '16:20', depCode: 'EZE', arrCode: 'MDZ', dur: '2h', date: '20 oct' },
+        ret: { dep: '10:40', arr: '17:10', depCode: 'MDZ', arrCode: 'EZE', dur: '6h 30m', date: '25 oct' },
+        priceTotal: 499305, pricePerPax: 252174, seats: 4,
+        backpack: true, carryon: false, bags: 0,
+        badges: ['cheapest'],
+      },
+      {
+        airline: 'JA', airlineFull: 'JetSMART',
+        out: { dep: '16:41', arr: '18:40', depCode: 'EZE', arrCode: 'MDZ', dur: '1h 59m', date: '20 oct' },
+        ret: { dep: '08:54', arr: '10:33', depCode: 'MDZ', arrCode: 'EZE', dur: '1h 39m', date: '25 oct' },
+        priceTotal: 615260, pricePerPax: 307630, seats: 2,
+        backpack: true, carryon: false, bags: 1,
+        badges: ['urgent'],
+      },
+      {
+        airline: 'JA', airlineFull: 'JetSMART',
+        out: { dep: '06:00', arr: '07:59', depCode: 'EZE', arrCode: 'MDZ', dur: '1h 59m', date: '20 oct' },
+        ret: { dep: '08:54', arr: '10:33', depCode: 'MDZ', arrCode: 'EZE', dur: '1h 39m', date: '25 oct' },
+        priceTotal: 669906, pricePerPax: 334953, seats: 20,
+        backpack: true, carryon: false, bags: 1,
+        badges: ['best'],
+      },
+      {
+        airline: 'JA', airlineFull: 'JetSMART',
+        out: { dep: '12:25', arr: '14:24', depCode: 'EZE', arrCode: 'MDZ', dur: '1h 59m', date: '20 oct' },
+        ret: { dep: '08:54', arr: '10:33', depCode: 'MDZ', arrCode: 'EZE', dur: '1h 39m', date: '25 oct' },
+        priceTotal: 669906, pricePerPax: 334953, seats: 2,
+        backpack: true, carryon: false, bags: 1,
+        badges: ['urgent'],
+      },
+      {
+        airline: 'AR', airlineFull: 'Aerolíneas Argentinas',
+        out: { dep: '06:05', arr: '08:05', depCode: 'EZE', arrCode: 'MDZ', dur: '2h', date: '20 oct' },
+        ret: { dep: '07:30', arr: '09:10', depCode: 'MDZ', arrCode: 'EZE', dur: '1h 40m', date: '25 oct' },
+        priceTotal: 685776, pricePerPax: 346352, seats: 9,
+        backpack: true, carryon: false, bags: 0,
+        badges: [],
+      },
+      {
+        airline: 'JA', airlineFull: 'JetSMART',
+        out: { dep: '06:00', arr: '07:59', depCode: 'EZE', arrCode: 'MDZ', dur: '1h 59m', date: '20 oct' },
+        ret: { dep: '08:54', arr: '10:33', depCode: 'MDZ', arrCode: 'EZE', dur: '1h 39m', date: '25 oct' },
+        priceTotal: 696126, pricePerPax: 348063, seats: 20,
+        backpack: true, carryon: true, bags: 0,
+        badges: ['carryon'],
+      },
+      {
+        airline: 'JA', airlineFull: 'JetSMART',
+        out: { dep: '12:25', arr: '14:24', depCode: 'EZE', arrCode: 'MDZ', dur: '1h 59m', date: '20 oct' },
+        ret: { dep: '08:54', arr: '10:33', depCode: 'MDZ', arrCode: 'EZE', dur: '1h 39m', date: '25 oct' },
+        priceTotal: 696126, pricePerPax: 348063, seats: 2,
+        backpack: true, carryon: true, bags: 0,
+        badges: ['urgent', 'carryon'],
+      },
+      {
+        airline: 'JA', airlineFull: 'JetSMART',
+        out: { dep: '16:41', arr: '18:40', depCode: 'EZE', arrCode: 'MDZ', dur: '1h 59m', date: '20 oct' },
+        ret: { dep: '08:54', arr: '10:33', depCode: 'MDZ', arrCode: 'EZE', dur: '1h 39m', date: '25 oct' },
+        priceTotal: 704406, pricePerPax: 352203, seats: 2,
+        backpack: true, carryon: false, bags: 1,
+        badges: ['urgent'],
+      },
+      {
+        airline: 'JA', airlineFull: 'JetSMART',
+        out: { dep: '16:41', arr: '18:40', depCode: 'EZE', arrCode: 'MDZ', dur: '1h 59m', date: '20 oct' },
+        ret: { dep: '08:54', arr: '10:33', depCode: 'MDZ', arrCode: 'EZE', dur: '1h 39m', date: '25 oct' },
+        priceTotal: 707028, pricePerPax: 353514, seats: 2,
+        backpack: true, carryon: false, bags: 1,
+        badges: ['urgent'],
+      },
+      {
+        airline: 'AR', airlineFull: 'Aerolíneas Argentinas',
+        out: { dep: '12:20', arr: '14:20', depCode: 'EZE', arrCode: 'MDZ', dur: '2h', date: '20 oct' },
+        ret: { dep: '07:30', arr: '09:10', depCode: 'MDZ', arrCode: 'EZE', dur: '1h 40m', date: '25 oct' },
+        priceTotal: 734937, pricePerPax: 371181, seats: 8,
+        backpack: true, carryon: false, bags: 0,
+        badges: [],
+      },
+    ];
+
+    const AI_TIP = {
+      icon: 'international-installments',
+      pill: 'Consejo financiero',
+      title: 'Pagá en cuotas sin interés',
+      content: 'Con Banco Brubank, accedés a 12 cuotas sin interés en vuelos nacionales. ¡Aprovechá esta oportunidad para viajar por Argentina!',
+    };
+
+    const HIGHLIGHTS = {
+      cheapest: { label: 'Más barato',  price: 252174, dur: 'Round trip' },
+      fastest:  { label: 'Más rápido',  price: 307630, dur: '1h 59m ida' },
+      best:     { label: 'Mejor',       price: 334953, dur: 'Balance precio/comodidad' },
+    };
+
+    /* ─── State ─── */
+    let currentSort   = 'recommended';
+    let currentFilter = 'all';
+    let showAll       = false;
+    const PAGE_SIZE   = 5;
+
+    /* ─── Helpers ─── */
+    function fmt(n) {
+      return '$ ' + Math.round(n).toLocaleString('es-AR');
+    }
+
+    function depHour(f) { return parseInt(f.out.dep.split(':')[0], 10); }
+
+    function getScore(f) {
+      const seats   = f.seats < 5 ? -10 : 0;
+      const luggage = f.bags > 0 ? 5 : 0;
+      const popular = f.airline === 'AR' ? 2 : 0;
+      return -f.pricePerPax + seats * 1000 + luggage * 5000 + popular * 3000;
+    }
+
+    function sortFlights(arr) {
+      const sorted = [...arr];
+      if (currentSort === 'cheapest')  sorted.sort((a, b) => a.pricePerPax - b.pricePerPax);
+      if (currentSort === 'fastest')   sorted.sort((a, b) => a.out.dur.localeCompare(b.out.dur));
+      if (currentSort === 'morning')   sorted.sort((a, b) => depHour(a) - depHour(b));
+      if (currentSort === 'recommended') sorted.sort((a, b) => getScore(b) - getScore(a));
+      return sorted;
+    }
+
+    function filterFlights(arr) {
+      if (currentFilter === 'all')     return arr;
+      if (currentFilter === 'AR')      return arr.filter(f => f.airline === 'AR');
+      if (currentFilter === 'JA')      return arr.filter(f => f.airline === 'JA');
+      if (currentFilter === 'bag')     return arr.filter(f => f.bags > 0);
+      if (currentFilter === 'carryon') return arr.filter(f => f.carryon);
+      if (currentFilter === 'few')     return arr.filter(f => f.seats <= 4);
+      return arr;
+    }
+
+    /* ─── Render ─── */
+    function badgeHTML(badge) {
+      const map = {
+        cheapest: ['cheapest', '<i class="eva-3-icon-trend-down"></i> Más barato'],
+        urgent:   ['urgent',   '<i class="eva-3-icon-warning"></i> Últimos asientos'],
+        best:     ['best',     '<i class="eva-3-icon-star-filled"></i> Mejor opción'],
+        popular:  ['popular',  '<i class="eva-3-icon-thumbs-up-filled"></i> Más elegido'],
+        carryon:  ['carryon',  '<i class="eva-3-icon-handbag"></i> Carry-on incluido'],
+      };
+      const [cls, txt] = map[badge] || ['popular', badge];
+      return `<span class="card-badge ${cls}">${txt}</span>`;
+    }
+
+    function luggageHTML(f) {
+      const parts = [];
+      parts.push(`<span class="luggage-chip included"><i class="eva-3-icon-backpack"></i> Mochila</span>`);
+      if (f.carryon) {
+        parts.push(`<span class="luggage-sep"></span><span class="luggage-chip included"><i class="eva-3-icon-handbag"></i> Carry-on</span>`);
+      } else {
+        parts.push(`<span class="luggage-sep"></span><span class="luggage-chip excluded"><i class="eva-3-icon-handbag"></i> Sin carry-on</span>`);
+      }
+      if (f.bags > 0) {
+        parts.push(`<span class="luggage-sep"></span><span class="luggage-chip included"><i class="eva-3-icon-suitcase"></i> ${f.bags} maleta 23kg</span>`);
+      } else {
+        parts.push(`<span class="luggage-sep"></span><span class="luggage-chip excluded"><i class="eva-3-icon-suitcase"></i> Sin maleta</span>`);
+      }
+      return parts.join('');
+    }
+
+    function legHTML(leg, label, isReturn) {
+      const cls = isReturn ? 'leg return-leg' : 'leg';
+      return `
+        <div class="${cls}">
+          <div class="leg-endpoint">
+            <div class="leg-time">${leg.dep}</div>
+            <div class="leg-airport">${leg.depCode}</div>
+          </div>
+          <div class="leg-line">
+            <div class="leg-bar-wrap">
+              <div class="leg-bar-seg"></div>
+              <i class="eva-3-icon-${isReturn ? 'airplane-return' : 'airplane-going'} leg-plane"></i>
+              <div class="leg-bar-seg right"></div>
+            </div>
+            <div class="leg-info">
+              <span class="leg-direct">Directo</span>
+              <span class="leg-dur">${leg.dur}</span>
+            </div>
+            <div class="leg-label">${label} · ${leg.date}</div>
+          </div>
+          <div class="leg-endpoint" style="text-align:right">
+            <div class="leg-time">${leg.arr}</div>
+            <div class="leg-airport">${leg.arrCode}</div>
+          </div>
+        </div>`;
+    }
+
+    function cardHTML(f, idx) {
+      const logoSrc = AIRLINE_LOGOS[f.airline] || '';
+      const badgesHTML = f.badges.map(badgeHTML).join('');
+      const urgency = f.seats <= 4
+        ? `<span class="urgency-chip"><i class="eva-3-icon-warning-filled"></i> Solo ${f.seats} asientos</span>`
+        : '';
+
+      return `
+        <article class="flight-card" style="animation-delay:${idx * 60}ms">
+          ${f.badges.length ? `<div class="card-badge-row">${badgesHTML}</div>` : ''}
+          <div class="card-main">
+            <div class="airline-col">
+              <img
+                class="airline-logo"
+                src="${logoSrc}"
+                alt="${f.airlineFull}"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+              />
+              <div class="airline-logo-fallback ${f.airline}" style="display:none">${f.airline}</div>
+              <div class="airline-name">${AIRLINE_NAMES[f.airline] || f.airline}</div>
+            </div>
+            <div class="route-col">
+              ${legHTML(f.out, 'Ida', false)}
+              <div class="leg-divider"></div>
+              ${legHTML(f.ret, 'Vuelta', true)}
+            </div>
+            <div class="price-col">
+              <div>
+                <div class="price-amount"><span class="price-currency">$</span>${Math.round(f.pricePerPax).toLocaleString('es-AR')}</div>
+                <div class="price-label">por persona · ARS</div>
+              </div>
+              <button class="btn-elegir" onclick="event.stopPropagation(); alert('Redirigiendo al checkout...')">
+                Elegir <i class="eva-3-icon-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+          <footer class="card-footer">
+            ${luggageHTML(f)}
+            ${urgency}
+          </footer>
+        </article>`;
+    }
+
+    function tipCardHTML() {
+      return `
+        <div class="tip-card">
+          <i class="eva-3-icon-${AI_TIP.icon} tip-icon"></i>
+          <div>
+            <span class="tip-pill">${AI_TIP.pill}</span>
+            <div class="tip-title">${AI_TIP.title}</div>
+            <div class="tip-content">${AI_TIP.content}</div>
+          </div>
+        </div>`;
+    }
+
+    function highlightsHTML() {
+      return `
+        <div class="highlights-row">
+          <div class="highlight-card" onclick="setSort(document.querySelector('[data-sort=cheapest]'))">
+            <div class="highlight-label cheapest"><i class="eva-3-icon-trend-down"></i> Más barato</div>
+            <div class="highlight-price">${fmt(HIGHLIGHTS.cheapest.price)} <span>ARS/pax</span></div>
+            <div class="highlight-dur">${HIGHLIGHTS.cheapest.dur}</div>
+          </div>
+          <div class="highlight-card" onclick="setSort(document.querySelector('[data-sort=fastest]'))">
+            <div class="highlight-label fastest"><i class="eva-3-icon-alarm-clock"></i> Más rápido</div>
+            <div class="highlight-price">${fmt(HIGHLIGHTS.fastest.price)} <span>ARS/pax</span></div>
+            <div class="highlight-dur">${HIGHLIGHTS.fastest.dur}</div>
+          </div>
+          <div class="highlight-card">
+            <div class="highlight-label best"><i class="eva-3-icon-star-filled"></i> Mejor</div>
+            <div class="highlight-price">${fmt(HIGHLIGHTS.best.price)} <span>ARS/pax</span></div>
+            <div class="highlight-dur">${HIGHLIGHTS.best.dur}</div>
+          </div>
+        </div>`;
+    }
+
+    function render() {
+      const filtered = filterFlights(flights);
+      const sorted   = sortFlights(filtered);
+      const shown    = showAll ? sorted : sorted.slice(0, PAGE_SIZE);
+
+      document.getElementById('results-count').innerHTML =
+        `<strong>${filtered.length} vuelos</strong> encontrados · Todos directos`;
+
+      const container = document.getElementById('results-container');
+      const parts = [highlightsHTML()];
+
+      shown.forEach((f, i) => {
+        parts.push(cardHTML(f, i));
+        if (i === 2 && sorted.length > 3) parts.push(tipCardHTML());
+      });
+
+      if (!showAll && sorted.length > PAGE_SIZE) {
+        parts.push(`
+          <button class="load-more-btn" onclick="showAll=true;render()">
+            Ver ${sorted.length - PAGE_SIZE} vuelos más ↓
+          </button>`);
+      }
+
+      if (filtered.length === 0) {
+        parts.push(`<div class="no-results">No hay vuelos para este filtro. Probá otra combinación.</div>`);
+      }
+
+      container.innerHTML = parts.join('');
+    }
+
+    /* ─── Controls ─── */
+    function setSort(btn) {
+      document.querySelectorAll('.sort-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      currentSort = btn.dataset.sort;
+      showAll = false;
+      render();
+    }
+
+    function setFilter(btn) {
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      showAll = false;
+      render();
+    }
+
+    /* ─── Init ─── */
+    render();
+
+    /* ─── Sofia ─── */
+    function toggleSofia() {
+      document.getElementById('sofia-chat').classList.toggle('open');
+    }
+
+    function sendSofia(input) {
+      const text = input.value.trim();
+      if (!text) return;
+      const body = document.querySelector('.sofia-chat-body');
+      const userMsg = document.createElement('div');
+      userMsg.style.cssText = 'background:var(--brand-3);color:#fff;border-radius:16px 16px 4px 16px;padding:10px 14px;font-size:13px;line-height:1.5;align-self:flex-end;animation:bubble-in .3s both';
+      userMsg.textContent = text;
+      body.appendChild(userMsg);
+      input.value = '';
+      body.scrollTop = body.scrollHeight;
+      setTimeout(() => {
+        const reply = document.createElement('div');
+        reply.className = 'sofia-bubble';
+        reply.textContent = '¡Entendido! Buscando las mejores opciones para vos…';
+        body.appendChild(reply);
+        body.scrollTop = body.scrollHeight;
+      }, 900);
+    }
+  </script>
+</body>
+</html>
